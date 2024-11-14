@@ -28,5 +28,5 @@ install -Dm 0755 %{name}.py %{buildroot}%{_bindir}/%{name}
 %{_bindir}/%{name}
 
 %changelog
-* Tue Nov 14 2024 Mario Luz <mariosergiosl@gmail.com> - 1.0-1
+* Tue Nov 14 2024 Mario Luz - 1.0-1
 - Initial package release.
