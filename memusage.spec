@@ -5,7 +5,7 @@ Summary:        Display memory usage of processes
 
 License:        GPL-2.0-only
 URL:            https://github.com/mariosergiosl/memusage
-Source0:        %{name}-%{version}.tar.xz
+Source0:        %{name}-%{version}+git%{cd}.tar.xz
 
 BuildRequires:  python3
 BuildRequires:  python3-psutil
