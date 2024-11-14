@@ -3,9 +3,12 @@ Version:        1.0
 Release:        1%{?dist}
 Summary:        Display memory usage of processes
 
+BuildArch: 	noarch
 License:        GPL-2.0-only
 URL:            https://github.com/mariosergiosl/memusage
 Source0:        %{name}-0.1.tar.xz
+Group:          System/Utilities
+
 
 BuildRequires:  python3
 BuildRequires:  python3-psutil
