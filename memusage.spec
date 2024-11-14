@@ -4,7 +4,7 @@ Release:        1%{?dist}
 Summary:        Display memory usage of processes
 
 License:        GPL-2.0-only
-URL:            https://github.com/mariosergiosl/memusage  # Seu repositório
+URL:            https://github.com/mariosergiosl/memusage
 Source0:        %{name}-%{version}.tar.gz
 
 BuildRequires:  python3
