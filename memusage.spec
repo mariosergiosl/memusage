@@ -1,5 +1,5 @@
 Name:           memusage
-Version:        1.0
+Version:        0.1
 Release:        1%{?dist}
 Summary:        Display memory usage of processes
 
@@ -7,7 +7,7 @@ BuildArch: 	noarch
 License:        GPL-2.0-only
 URL:            https://github.com/mariosergiosl/memusage
 Source0:        %{name}-0.1.tar.xz
-Group:          System/Utilities
+Group:          System/Management
 
 
 BuildRequires:  python3
@@ -31,5 +31,5 @@ install -Dm 0755 %{name}.py %{buildroot}%{_bindir}/%{name}
 %{_bindir}/%{name}
 
 %changelog
-* Tue Nov 14 2024 Mario Luz - 1.0-1
+* Tue Nov 14 2024 Mario Luz <mario.mssl[at]google.com> - 0.1
 - Initial package release.
