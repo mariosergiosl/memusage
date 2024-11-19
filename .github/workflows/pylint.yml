@@ -23,3 +23,7 @@ jobs:
     - name: Analysing the code with pylint
       run: |
         pylint --rcfile=.pylintrc $(git ls-files '*.py')
+    - name: Run pytest
+      run: |
+        pip install pytest
+        pytest -v tests/
