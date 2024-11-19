@@ -18,6 +18,14 @@
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
 import psutil
+# Colors for process priorit
+NICE_COLORS = {
+    -20: "\033[91m",  # Red
+    -10: "\033[93m",  # Yellow
+    0: "\033[92m",    # Green
+    10: "\033[94m",   # Blue
+    19: "\033[90m",   # Grey
+    }
 
 def get_total_memory() -> float:
     """Returns the total system memory in MB.
@@ -55,10 +63,14 @@ def get_process_memory_usage(process: psutil.Process) -> int:
     Returns:
         int: Total memory usage in bytes.
     """
-    total = process.memory_info().rss
-    for child in process.children(recursive=True):
-        total += child.memory_info().rss
-    return total
+    try:
+        total = process.memory_info().rss
+        for child in process.children(recursive=True):
+            total += child.memory_info().rss
+        return total
+    except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
+        print(f"Error accessing process: {process.pid}") 
+        return 0
 
 def show_process_memory_usage(process: psutil.Process, level=0):
     """Displays the memory usage of a process and its children recursively.
@@ -67,9 +79,16 @@ def show_process_memory_usage(process: psutil.Process, level=0):
         process (psutil.Process): The process to display memory usage for.
         level (int, optional): The indentation level. Defaults to 0.
     """
-    print("  " * level + f"{process.pid} - {process.name()} ({process.memory_info().rss / (1024 * 1024):.2f} MB)")
-    for child in process.children():
-        show_process_memory_usage(child, level + 1)
+
+    try:
+        nice_value = process.nice()
+        color = NICE_COLORS.get(nice_value, "\033[0m")  # Default color not found
+        print(f"  " * level + f"{color}{process.pid} - {process.name()} ({process.memory_info().rss / (1024 * 1024):.2f} MB)\033[0m")
+        for child in process.children():
+            show_process_memory_usage(child, level + 1)
+    except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
+        print(f"  " * level + f"Error accessing process: {process.pid}")
+
 
 if __name__ == '__main__':
     main_process = psutil.Process(1)

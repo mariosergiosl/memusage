@@ -7,6 +7,7 @@ This tool displays the memory usage of processes on a Linux system.
 * Shows total system memory, free memory, and used memory.
 * Displays the memory usage of each process in a hierarchical tree format.
 * Calculates the total memory usage of a process and its children.
+* **Color-coded output based on process priority.**
 
 ## Installation
 
@@ -36,6 +37,45 @@ memusage
 
 ## Output
 The output will show:
+
+* Total system memory
+* Free system memory
+* Used system memory
+* Total memory usage of the process tree
+* Memory usage of each process with its PID, name, and memory consumption, color-coded by priority:
+
+| Priority   | Color     |  Nice Value  |
+|------------|-----------|--------------|
+| High       | Red       | -20          |
+|            |           | -15          | 
+|            |           | -10          |
+| Medium     | Yellow    | -5           |
+|            |           | 0            |
+|            |           | 5            |
+| Low        | Green     | 10           |
+|            |           | 15           |
+|            |           | 19           |
+
+## Testing Color-Coded Output
+
+To test the color-coded output, you can run processes with different priorities using the `nice` command.
+
+**Examples:**
+
+* **High priority:**
+```bash
+  nice -n -20 yes > /dev/null &
+```
+* **Medium priority:**
+```bash
+  nice -n -20 yes > /dev/null &
+```
+* **Low priority:**
+```bash
+  nice -n -20 yes > /dev/null &
+```
+After running these commands, execute memusage again and observe the color-coded output.
+
 
 ```bash
 memusage
