@@ -1,0 +1,71 @@
+[MASTER]
+
+# Um bom valor inicial para começar, evitando muitas mensagens.
+# Você pode ajustar esse valor conforme necessário.
+disable=
+    missing-module-docstring,
+    missing-function-docstring,
+    too-many-arguments,
+    invalid-name,
+    line-too-long
+
+[MESSAGES CONTROL]
+
+# Desabilita a mensagem sobre nomes de variáveis em maiúsculas (usado para constantes)
+disable=invalid-name
+
+[REPORTS]
+
+# Formato do relatório (pode ser text, parseable, colorized, msvs, html)
+output-format=colorized
+
+# Arquivo de saída para o relatório (opcional)
+# output-file=pylint_report.txt
+
+[BASIC]
+
+# Estilo de nomes de classes (se diferente do padrão)
+# good-names=bar
+
+# Estilo de nomes de funções (se diferente do padrão)
+# good-names=foo
+
+[DESIGN]
+
+# Número máximo de argumentos para uma função
+max-args=10
+
+# Número máximo de atributos para uma classe
+max-attributes=10
+
+# Número máximo de variáveis locais em uma função
+max-locals=20
+
+# Número máximo de métodos públicos em uma classe
+max-public-methods=20
+
+# Número máximo de branches em uma função
+max-branches=20
+
+# Número máximo de statements em uma função
+max-statements=50
+
+# Número máximo de parents para uma classe
+max-parents=7
+
+# Número máximo de atributos para uma classe (incluindo herdados)
+max-attributes=20
+
+[SIMILARITIES]
+
+# Limiar de similaridade para detectar código duplicado
+min-similarity-lines=4
+
+# Ignora nomes de módulos ao detectar código duplicado
+ignore-imports=yes
+
+# Ignora docstrings ao detectar código duplicado
+ignore-docstrings=yes
+
+# Ignora comentários ao detectar código duplicado
+ignore-comments=yes
