@@ -8,11 +8,10 @@ jobs:
     container: opensuse/leap:15.6
     steps:
     - name: Install tar
-      run: apt-get update && sudo apt-get install -y tar
+      run: zypper in -y tar
+      run: echo "i am ---------------------------------------"
     - name: Add tar to PATH
       run: echo "PATH=$PATH:/usr/bin" >> $GITHUB_ENV
-    - name: Update tar
-      run: apt-get update && sudo apt-get install -y --only-upgrade tar
     - uses: actions/checkout@v3
     - name: Set up Python
       uses: actions/setup-python@v4
