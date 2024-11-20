@@ -12,7 +12,7 @@ jobs:
       with:
         entrypoint: /bin/bash
         args: |
-          rpm -Uvh http://download.opensuse.org/tumbleweed/repo/oss/x86_64/zypper-1.14.51-1.1.x86_64.rpm
-          zypper ref
-          zypper in -y pylint
-          pylint --rcfile=.pylintrc $(git ls-files '*.py')
+          /usr/bin/rpm -Uvh http://download.opensuse.org/tumbleweed/repo/oss/x86_64/zypper-1.14.51-1.1.x86_64.rpm
+          /usr/bin/zypper ref
+          /usr/bin/zypper in -y pylint
+          /usr/bin/pylint --rcfile=.pylintrc $(/usr/bin/git ls-files '*.py')
