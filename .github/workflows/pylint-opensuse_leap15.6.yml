@@ -16,8 +16,8 @@ jobs:
         python-version: '3.9'
     - name: Install dependencies
       run: |
-        python3.9 -m pip install --upgrade pip
-        python3.9 -m pip install pylint psutil
+        python -m pip install --upgrade pip
+        python -m pip install pylint psutil
     - name: Check for psutil installation
       run: |
         # Check if psutil is installed
