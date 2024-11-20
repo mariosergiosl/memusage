@@ -1,3 +1,10 @@
+[flake8]
 max-line-length = 150
 ignore = F541
 extend-ignore = F541
+
+[pycodestyle]
+max-line-length = 150
+
+[mccabe]
+max-complexity = 10
