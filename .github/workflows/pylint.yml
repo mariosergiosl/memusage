@@ -26,7 +26,9 @@ jobs:
     - name: Install dependencies
       run: |
         zypper ref
-        zypper in -y pylint
+        zypper in -y tar 
+        zypper in -y git 
+        zypper in -y pylint 
     - name: Add tar to PATH  # Novo passo
       run: echo "PATH=$PATH:/usr/bin" >> $GITHUB_ENV
     - name: Analysing the code with pylint
