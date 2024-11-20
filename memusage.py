@@ -67,20 +67,24 @@ NICE_COLORS = {
     19: "\033[90m",  # Cinza
 }
 
+
 def get_total_memory() -> float:
     """Returns the total system memory in MB."""
     mem = psutil.virtual_memory()
     return mem.total / (1024 * 1024)
+
 
 def get_free_memory() -> float:
     """Returns the free system memory in MB."""
     mem = psutil.virtual_memory()
     return mem.available / (1024 * 1024)
 
+
 def get_used_memory() -> float:
     """Returns the used system memory in MB."""
     mem = psutil.virtual_memory()
     return mem.used / (1024 * 1024)
+
 
 def get_process_memory_usage(process: psutil.Process) -> int:
     """Calculates the total memory usage of a process and its children in bytes.
@@ -99,6 +103,7 @@ def get_process_memory_usage(process: psutil.Process) -> int:
     except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
         print(f"Error accessing process {process.pid}")
         return 0
+
 
 def show_process_memory_usage(process: psutil.Process, level=0):
     """Displays the memory usage of a process and its children recursively.
@@ -125,7 +130,7 @@ if __name__ == '__main__':
     print("Free system memory:", get_free_memory(), "MB")
     print("Used system memory:", get_used_memory(), "MB")
 
-    print("\nTotal memory usage of the process tree:", get_process_memory_usage(main_process) / (1024 * 1024), "MB")
+    print("\nTotal mem. process tree:", get_process_memory_usage(main_process) / (1024 * 1024), "MB")
 
     print("\nMemory usage of each process:")
     print("PID - Process Name (Memory Usage)")
