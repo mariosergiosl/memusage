@@ -19,6 +19,8 @@ jobs:
     - name: Install  python packages
       run: /usr/bin/python3.9 -m pip install pylint psutil
 
+    - uses: actions/checkout@v3      
+
     - name: Analysing the code with pylint
       run: |
          /usr/bin/python3.9 -m pylint --rcfile=.pylintrc --init-hook="import sys; sys.path.append('.')" $(git ls-files '*.py')        
