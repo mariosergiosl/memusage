@@ -8,8 +8,11 @@ jobs:
     container: opensuse/leap:15.6
     steps:
     - name: Install packages
-      run: zypper ref; zypper in -y tar gzip python39; zypper up -y
- 
+      run: zypper ref; zypper in -y cur tar gzip python39; zypper up -y
+
+    - name: Install Python-Pip
+      run: curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py ; /usr/bin/python3.9 get-pip.py
+
     - name: Update python pip
       run: /usr/bin/python3.9 -m ensurepip --upgrade ; /usr/bin/python3.9 -m pip install --upgrade pip
       
@@ -25,13 +28,13 @@ jobs:
     - name: Check for psutil installation
       run: |
         # Check if psutil is installed
-        if ! pip show psutil; then
+        if ! /usr/bin/python3 -m pip show psutil; then
           echo "psutil is not installed."
           exit 1
         fi
     - name: Verify psutil with Python
       run: |
-        p/usr/bin/python3. -c "import psutil; print(psutil.__version__)"
+        /usr/bin/python3 -c "import psutil; print(psutil.__version__)"
     - name: Print environment variables
       run: |
         echo "PATH: $PATH"
