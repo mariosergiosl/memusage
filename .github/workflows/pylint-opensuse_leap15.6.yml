@@ -8,7 +8,7 @@ jobs:
     container: opensuse/leap:15.6
     steps:
     - name: Install tar
-      run: zypper in -y tar gzip rpm 
+      run: zypper ref; zypper in -y tar gzip; zypper up -y 
     - uses: actions/checkout@v3
     - name: Set up Python
       uses: actions/setup-python@v4
