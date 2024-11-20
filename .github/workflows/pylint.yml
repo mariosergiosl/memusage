@@ -8,9 +8,9 @@ jobs:
     steps:
     - uses: actions/checkout@v3
     - name: Lint with pylint
-      uses: docker://opensuse/leap:15.6  # Usando a imagem do openSUSE
+      uses: docker://opensuse/leap:15.6
       with:
-        entrypoint: /bin/sh -c  # Especificando o entrypoint
+        entrypoint: /bin/sh
         args: |
           zypper ref
           zypper in -y pylint
