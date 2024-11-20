@@ -21,10 +21,6 @@ jobs:
       uses: actions/setup-git@v3
       with:
         git-version: '2.39.2'
-    - name: Download and extract code 
-      run: |
-        wget https://github.com/mariosergiosl/memusage/archive/refs/heads/main.tar.gz
-        tar -xzf main.tar.gz
     - uses: actions/checkout@v2
     - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v4
@@ -35,13 +31,11 @@ jobs:
       run: |
         zypper ref
         zypper in -y pylint
-    - name: Add tar to PATH 
-      run: echo "PATH=$PATH:/usr/bin" >> $GITHUB_ENV
+        pip install pytest  # Instala o pytest com o pip
     - name: Analysing the code with pylint
       run: |
         pylint --rcfile=.pylintrc $(git ls-files '*.py')
     - name: Run pytest
       run: |
-        pip install pytest
         python -m pip install .
         pytest -v tests/
