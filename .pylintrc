@@ -8,6 +8,7 @@ disable=
     too-many-arguments,
     invalid-name,
     line-too-long
+extension-pkg-whitelist=psutil
 
 [MESSAGES CONTROL]
 
