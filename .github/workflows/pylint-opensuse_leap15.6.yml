@@ -8,8 +8,7 @@ jobs:
     container: opensuse/leap:15.6
     steps:
     - name: Install tar
-      run: zypper in -y tar
-      run: echo "i am ---------------------------------------"
+      run: zypper in -y tar; echo "i am ---------------------------------------"
     - name: Add tar to PATH
       run: echo "PATH=$PATH:/usr/bin" >> $GITHUB_ENV
     - uses: actions/checkout@v3
