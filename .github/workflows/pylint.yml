@@ -5,13 +5,13 @@ on: [push]
 jobs:
   lint:
     runs-on: ubuntu-latest
-    container: opensuse/leap:15.6  # Usando o openSUSE Leap 15.6
     steps:
     - uses: actions/checkout@v3
-    - name: Install pylint
-      run: |
-        zypper ref
-        zypper in -y pylint
-    - name: Run pylint
-      run: |
-        pylint --rcfile=.pylintrc $(git ls-files '*.py')
+    - name: Lint with pylint
+      uses: docker://opensuse/leap:15.6  # Usando a imagem do openSUSE
+      with:
+        entrypoint: /bin/sh -c  # Especificando o entrypoint
+        args: |
+          zypper ref
+          zypper in -y pylint
+          pylint --rcfile=.pylintrc $(git ls-files '*.py')
