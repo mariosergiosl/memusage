@@ -8,7 +8,7 @@ jobs:
     container: opensuse/leap:15.6
     steps:
     - name: Install packages
-      run: zypper ref; zypper in -y tar gzip python39 python39-pip; zypper up -y
+      run: zypper ref; zypper in -y tar gzip python39; zypper up -y
  
     - name: Update python pip
       run: /usr/bin/python3.9 -m ensurepip --upgrade | /usr/bin/python3.9 -m pip install --upgrade pip
