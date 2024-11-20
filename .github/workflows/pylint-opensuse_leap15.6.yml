@@ -19,8 +19,12 @@ jobs:
     - name: Install  python packages
       run: /usr/bin/python3.9 -m pip install pylint psutil
 
+    - name: Configure Git to ignore ownership check
+      run: git config --global --add safe.directory /__w/memusage/memusage
+
     - uses: actions/checkout@v3      
+      with:
+        persist-credentials: true
 
     - name: Analysing the code with pylint
-      run: |
-         /usr/bin/python3.9 -m pylint --rcfile=.pylintrc --init-hook="import sys; sys.path.append('.')" $(git ls-files '*.py')        
+      run: /usr/bin/python3.9 -m pylint --rcfile=.pylintrc --init-hook="import sys; sys.path.append('.')" $(git ls-files '*.py')        
