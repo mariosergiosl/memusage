@@ -1,0 +1,30 @@
+name: Pylint
+
+on: [push]
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    container: opensuse/leap:15.6
+    strategy:
+      matrix:
+        python-version: ["3.6", "3.9"]
+    steps:
+    - uses: actions/checkout@v4
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ matrix.python-version }}
+        architecture: 'x64'
+    - name: Install dependencies
+      run: |
+        zypper ref
+        zypper in -y pylint tar
+    - name: Analysing the code with pylint
+      run: |
+        pylint --rcfile=.pylintrc $(git ls-files '*.py')
+    - name: Run pytest
+      run: |
+        pip install pytest
+        python -m pip install .
+        pytest -v tests/
