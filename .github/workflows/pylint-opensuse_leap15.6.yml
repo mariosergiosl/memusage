@@ -19,20 +19,6 @@ jobs:
     - name: Install  python packages
       run: /usr/bin/python3.9 -m pip install pylint psutil
 
-    - name: Check for psutil installation
-      run: |
-        if ! /usr/bin/python3.9 -m pip show psutil; then
-          echo "psutil is not installed."
-          exit 1
-        fi
-    - name: Verify psutil with Python
-      run: |
-        /usr/bin/python3.9 -c "import psutil; print(psutil.__version__)"
-    - name: Print environment variables
-      run: |
-        echo "PATH: $PATH"
-        echo "PYTHONPATH: $PYTHONPATH"
-        echo "VIRTUAL_ENV: $VIRTUAL_ENV"
     - name: Analysing the code with pylint
       run: |
          /usr/bin/python3.9 -m pylint --rcfile=.pylintrc --init-hook="import sys; sys.path.append('.')" $(git ls-files '*.py')        
