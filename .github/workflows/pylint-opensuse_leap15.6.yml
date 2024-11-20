@@ -10,14 +10,11 @@ jobs:
     - name: Install packages
       run: zypper ref; zypper in -y tar gzip python39; zypper up -y
  
-    - name: Check Python
-      run: whereis python; find / -name python*
-
     - name: Update python pip
-      run: python39 -m pip install --upgrade pip
+      run: /usr/bin/python3.9 -m pip install --upgrade pip
       
     - name: Install  python packages
-      run: python39 -m pip install pylint psutil
+      run: /usr/bin/python3.9 -m pip install pylint psutil
 
     - uses: actions/checkout@v3
     - name: Set up Python
@@ -34,13 +31,9 @@ jobs:
         fi
     - name: Verify psutil with Python
       run: |
-        python39 -c "import psutil; print(psutil.__version__)"
+        p/usr/bin/python3. -c "import psutil; print(psutil.__version__)"
     - name: Print environment variables
       run: |
         echo "PATH: $PATH"
         echo "PYTHONPATH: $PYTHONPATH"
         echo "VIRTUAL_ENV: $VIRTUAL_ENV"
-    - name: Check tar version 
-      run: tar --version
-    - name: Which tar
-      run: which tar

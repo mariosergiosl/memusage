@@ -87,7 +87,7 @@ if ! git diff-index --quiet HEAD --; then
   echo "Updating the following files:"
   echo "$updated_files"
   echo "Press Enter to use the default commit message or type a custom message:"
-  read -r -p "Commit message: " commit_message
+  #read -r -p "Commit message: " commit_message
 
   # Use the default commit message if none is provided
   if [[ -z "$commit_message" ]]; then
