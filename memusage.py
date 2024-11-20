@@ -97,7 +97,7 @@ def get_process_memory_usage(process: psutil.Process) -> int:
             total += child.memory_info().rss
         return total
     except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
-        print(f"Error accessing process {process.pid}") 
+        print(f"Error accessing process {process.pid}")
         return 0
 
 def show_process_memory_usage(process: psutil.Process, level=0):
@@ -120,10 +120,6 @@ def show_process_memory_usage(process: psutil.Process, level=0):
 
 if __name__ == '__main__':
     main_process = psutil.Process(1)
-
-    print("\nPriority Color Table:")
-    for nice_value, color in NICE_COLORS.items():
-        print(f"{color}Priority: {nice_value}\tColor: {color}{color}\033[0m")
 
     print("Total system memory:", get_total_memory(), "MB")
     print("Free system memory:", get_free_memory(), "MB")
