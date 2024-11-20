@@ -7,6 +7,12 @@ jobs:
     runs-on: ubuntu-latest
     container: opensuse/leap:15.6
     steps:
+    - name: Install tar
+      run: sudo apt-get update && sudo apt-get install -y tar
+    - name: Add tar to PATH
+      run: echo "PATH=$PATH:/usr/bin" >> $GITHUB_ENV
+    - name: Update tar
+      run: sudo apt-get update && sudo apt-get install -y --only-upgrade tar
     - uses: actions/checkout@v3
     - name: Set up Python
       uses: actions/setup-python@v4
@@ -31,7 +37,7 @@ jobs:
         echo "PATH: $PATH"
         echo "PYTHONPATH: $PYTHONPATH"
         echo "VIRTUAL_ENV: $VIRTUAL_ENV"
-    - name: Check tar version  # Novo passo para verificar a versão do tar
+    - name: Check tar version 
       run: tar --version
-    - name: Which tar          # Novo passo para verificar o caminho do tar
+    - name: Which tar
       run: which tar
