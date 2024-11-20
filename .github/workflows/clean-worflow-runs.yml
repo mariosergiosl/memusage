@@ -13,7 +13,7 @@ jobs:
   limpar:
     runs-on: ubuntu-latest
     steps:
-      - name: Limpar workflows com falhas
+      - name: clean workflows with erros
         uses: actions/github-script@v7
         with:
           script: |
@@ -21,7 +21,6 @@ jobs:
             const runs = await github.rest.actions.listWorkflowRunsForRepo({
               owner,
               repo,
-              status: 'failure',
             });
             for (const run of runs.data.workflow_runs) {
               await github.rest.actions.deleteWorkflowRun({
