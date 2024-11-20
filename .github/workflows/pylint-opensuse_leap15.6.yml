@@ -5,7 +5,7 @@ on: [push]
 jobs:
   lint:
     runs-on: ubuntu-latest
-    container: opensuse/leap:15.6  # Especifica o contêiner openSUSE
+    container: opensuse/leap:15.6
     steps:
     - uses: actions/checkout@v3
     - name: Set up Python
@@ -31,6 +31,10 @@ jobs:
         echo "PATH: $PATH"
         echo "PYTHONPATH: $PYTHONPATH"
         echo "VIRTUAL_ENV: $VIRTUAL_ENV"
+    - name: Check tar version  # Novo passo para verificar a versão do tar
+      run: tar --version
+    - name: Which tar          # Novo passo para verificar o caminho do tar
+      run: which tar
     - name: Analysing the code with pylint
       run: |
         python3.9 -m pylint --rcfile=.pylintrc --init-hook="import sys; sys.path.append('.')" $(git ls-files '*.py')

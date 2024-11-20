@@ -1,5 +1,3 @@
-# This workflow will install Python dependencies, run tests and lint with a single version of Python
-# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-python
 name: Python application
 
 on:
@@ -14,22 +12,27 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-latest
-    container: opensuse/leap:15.6
-    strategy:
-      matrix:
-        python-version: ["3.6", "3.9"]
     steps:
-    - uses: actions/checkout@v3    # 4 show erros with tar
-    - name: Set up Python ${{ matrix.python-version }}
+    - uses: actions/checkout@v3
+    - name: Set up Python 3.9
       uses: actions/setup-python@v4
       with:
-        python-version: ${{ matrix.python-version }}
+        python-version: "3.9"
         architecture: 'x64'
     - name: Install dependencies
       run: |
-        zypper ref
-        zypper in -y pytest tar
-        python -m pip install .
-    - name: Test with pytest
+        python -m pip install --upgrade pip
+        pip install flake8
+    - name: Lint with flake8
       run: |
-        pytest -v tests/
+        flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+        flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+    - name: Generate documentation (opcional)
+      run: |
+        pip install sphinx
+        sphinx-build -b html docs/ docs/_build/
+    - name: Upload documentation (opcional)
+      uses: actions/upload-artifact@v3
+      with:
+        name: documentation
+        path: docs/_build/
