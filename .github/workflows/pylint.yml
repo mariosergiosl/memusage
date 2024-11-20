@@ -21,22 +21,22 @@ jobs:
       uses: actions/setup-git@v3
       with:
         git-version: '2.39.2'
-    - name: Download and extract code  # Download manual com wget e tar
+    - name: Download and extract code 
       run: |
         wget https://github.com/mariosergiosl/memusage/archive/refs/heads/main.tar.gz
         tar -xzf main.tar.gz
-    - name: Install dependencies
-      run: |
-        zypper ref
-        zypper in -y tar
-        zypper in -y pylint
-    - name: Add tar to PATH 
-      run: echo "PATH=$PATH:/usr/bin" >> $GITHUB_ENV
+    - uses: actions/checkout@v2
     - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v4
       with:
         python-version: ${{ matrix.python-version }}
         architecture: 'x64'
+    - name: Install dependencies
+      run: |
+        zypper ref
+        zypper in -y pylint
+    - name: Add tar to PATH 
+      run: echo "PATH=$PATH:/usr/bin" >> $GITHUB_ENV
     - name: Analysing the code with pylint
       run: |
         pylint --rcfile=.pylintrc $(git ls-files '*.py')
