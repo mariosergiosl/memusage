@@ -19,15 +19,8 @@ jobs:
     - name: Install  python packages
       run: /usr/bin/python3.9 -m pip install pylint psutil
 
-    - uses: actions/checkout@v3
-    - name: Set up Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: '3.9'
-
     - name: Check for psutil installation
       run: |
-        # Check if psutil is installed
         if ! /usr/bin/python3 -m pip show psutil; then
           echo "psutil is not installed."
           exit 1
