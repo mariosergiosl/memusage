@@ -7,7 +7,9 @@
 #
 # DESCRIPTION: This script updates a Git repository with the latest changes.
 #              If a commit message is provided as an argument, it uses that.
-#              Otherwise, it prompts the user for a commit message.
+#              Otherwise, it shows the list of changed files and prompts 
+#              the user for a commit message (optional). If no message is 
+#              entered, it uses a default message with the files list.
 #
 # OPTIONS:
 #    -h, --help       Display this help message
@@ -20,17 +22,17 @@
 # NOTES:
 #
 # AUTHOR:
-#   Mario Sergio (ms), mariosergiosl@gmail.com
+#   Mario Luz (ml), mario.mssl[at]gmail.com
 #
 # COMPANY:
 #
-# VERSION: 1.1
-# CREATED: 2024-11-20 17:00:00
-# REVISION: 2024-11-21 14:00:00
+# VERSION: 1.2
+# CREATED: 2024-11-18 17:00:00
+# REVISION: 2024-11-21 15:00:00
 #===============================================================================
 
 # Set script version
-SCRIPT_VERSION="1.1"
+SCRIPT_VERSION="1.2"
 
 # Display help message
 show_help() {
@@ -46,6 +48,7 @@ OPTIONS:
 Examples:
   $0 "My commit message"
   $0 -m "My commit message"
+  $0 
 EOF
 }
 
@@ -72,10 +75,6 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
-if [[ -z "$commit_message" ]]; then
-  read -p "Enter the commit message: " commit_message
-fi
-
 # Check if there are uncommitted changes
 if ! git diff-index --quiet HEAD --; then
   # Add all changes to the staging area
@@ -84,8 +83,19 @@ if ! git diff-index --quiet HEAD --; then
   # Get the list of updated files
   updated_files=$(git diff --cached --name-only)
 
+  # Display the list of updated files and prompt for a commit message
+  echo "Updating the following files:"
+  echo "$updated_files"
+  echo "Press Enter to use the default commit message or type a custom message:"
+  read -r -p "Commit message: " commit_message
+
+  # Use the default commit message if none is provided
+  if [[ -z "$commit_message" ]]; then
+    commit_message="Updating files: $updated_files"
+  fi
+
   # Commit the changes with the updated files list as the comment
-  git commit -m "$commit_message" -m "Updating the following files: $updated_files"
+  git commit -m "$commit_message"
 
   # Pull the latest changes from the remote repository
   git pull origin main
