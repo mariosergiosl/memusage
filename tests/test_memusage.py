@@ -3,10 +3,9 @@
 import sys
 import os
 
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-
-
 import memusage
+
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 def test_get_total_memory():
     """Tests the get_total_memory function."""
@@ -36,5 +35,5 @@ def test_show_process_memory_usage():
     try:
         process = memusage.psutil.Process()
         memusage.show_process_memory_usage(process)
-    except Exception as e:
+    except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess) as e:
         assert False, f"show_process_memory_usage raised an exception: {e}"

@@ -1,7 +1,7 @@
 [MASTER]
 
-# Um bom valor inicial para começar, evitando muitas mensagens.
-# Você pode ajustar esse valor conforme necessário.
+# A good starting point for disabling messages.
+# You can adjust these as needed.
 disable=
     missing-module-docstring,
     missing-function-docstring,
@@ -11,61 +11,61 @@ disable=
 
 [MESSAGES CONTROL]
 
-# Desabilita a mensagem sobre nomes de variáveis em maiúsculas (usado para constantes)
+# Disable the message about uppercase variable names (used for constants)
 disable=invalid-name
 
 [REPORTS]
 
-# Formato do relatório (pode ser text, parseable, colorized, msvs, html)
+# Format of the report (can be text, parseable, colorized, msvs, html)
 output-format=colorized
 
-# Arquivo de saída para o relatório (opcional)
+# Output file for the report (optional)
 # output-file=pylint_report.txt
 
 [BASIC]
 
-# Estilo de nomes de classes (se diferente do padrão)
-# good-names=bar
+# Naming style for classes (if different from the default)
+# good-names=Bar
 
-# Estilo de nomes de funções (se diferente do padrão)
+# Naming style for functions (if different from the default)
 # good-names=foo
 
 [DESIGN]
 
-# Número máximo de argumentos para uma função
+# Maximum number of arguments for a function
 max-args=10
 
-# Número máximo de atributos para uma classe
+# Maximum number of attributes for a class
 max-attributes=10
 
-# Número máximo de variáveis locais em uma função
+# Maximum number of local variables in a function
 max-locals=20
 
-# Número máximo de métodos públicos em uma classe
+# Maximum number of public methods in a class
 max-public-methods=20
 
-# Número máximo de branches em uma função
+# Maximum number of branches in a function
 max-branches=20
 
-# Número máximo de statements em uma função
+# Maximum number of statements in a function
 max-statements=50
 
-# Número máximo de parents para uma classe
+# Maximum number of parents for a class
 max-parents=7
 
-# Número máximo de atributos para uma classe (incluindo herdados)
-max-attributes=20
+# Maximum number of attributes for a class (including inherited)
+# max-attributes=20  # Removida a linha duplicada
 
 [SIMILARITIES]
 
-# Limiar de similaridade para detectar código duplicado
+# Minimum similarity lines to detect duplicate code
 min-similarity-lines=4
 
-# Ignora nomes de módulos ao detectar código duplicado
+# Ignore imports when detecting duplicate code
 ignore-imports=yes
 
-# Ignora docstrings ao detectar código duplicado
+# Ignore docstrings when detecting duplicate code
 ignore-docstrings=yes
 
-# Ignora comentários ao detectar código duplicado
+# Ignore comments when detecting duplicate code
 ignore-comments=yes
