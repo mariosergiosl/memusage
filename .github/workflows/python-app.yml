@@ -28,8 +28,8 @@ jobs:
     - name: Install dependencies
       run: |
         zypper ref
-        zypper in -y pytest
-        python -m pip install .  # Instala o módulo memusage
+        zypper in -y pytest tar
+        python -m pip install .
     - name: Test with pytest
       run: |
         pytest -v tests/

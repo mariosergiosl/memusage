@@ -19,11 +19,12 @@ jobs:
     - name: Install dependencies
       run: |
         zypper ref
-        zypper in -y pylint
+        zypper in -y pylint tar
     - name: Analysing the code with pylint
       run: |
         pylint --rcfile=.pylintrc $(git ls-files '*.py')
     - name: Run pytest
       run: |
         pip install pytest
+        python -m pip install .
         pytest -v tests/
