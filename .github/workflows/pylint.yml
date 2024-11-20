@@ -8,7 +8,7 @@ jobs:
     steps:
     - uses: actions/checkout@v3
     - name: Lint with pylint
-      uses: docker://opensuse/tumbleweed:latest-x86_64
+      uses: docker://opensuse/tumbleweed:latest
       with:
         entrypoint: /bin/bash
         args: |
