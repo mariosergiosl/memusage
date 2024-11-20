@@ -8,7 +8,7 @@ jobs:
     container: opensuse/leap:15.6
     steps:
     - name: Install tar
-      run: zypper ref; zypper in -y tar gzip; zypper up -y
+      run: zypper ref; zypper in -y tar gzip python39; zypper up -y
     - name: Check Install Python
       run: python --version; python -V; whereis python
     - uses: actions/checkout@v3
