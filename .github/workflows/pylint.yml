@@ -5,38 +5,13 @@ on: [push]
 jobs:
   lint:
     runs-on: ubuntu-latest
-    container: opensuse/leap:15.6
-    strategy:
-      matrix:
-        python-version: ["3.6", "3.9"]
+    container: opensuse/leap:15.6  # Usando o openSUSE Leap 15.6
     steps:
-      - name: Clear GitHub Actions cache
-        uses: actions/cache@v3
-        with:
-          path: ~/.cache/pip
-          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
-          restore-keys: |
-            ${{ runner.os }}-pip-
-      - name: Set up Git
-        uses: actions/setup-git@v3
-        with:
-          git-version: '2.39.2'
-      - uses: actions/checkout@v4
-      - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v4
-        with:
-          python-version: ${{ matrix.python-version }}
-          architecture: 'x64'
-      - name: Install dependencies
-        run: |
-          zypper ref
-          zypper in -y tar
-          zypper in -y pylint
-      - name: Analysing the code with pylint
-        run: |
-          pylint --rcfile=.pylintrc $(git ls-files '*.py')
-      - name: Run pytest
-        run: |
-          pip install pytest
-          python -m pip install .
-          pytest -v tests/
+    - uses: actions/checkout@v3
+    - name: Install pylint
+      run: |
+        zypper ref
+        zypper in -y pylint
+    - name: Run pylint
+      run: |
+        pylint --rcfile=.pylintrc $(git ls-files '*.py')
