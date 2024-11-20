@@ -65,8 +65,8 @@ def get_process_memory_usage(process: psutil.Process) -> int:
         for child in process.children(recursive=True):
             total += child.memory_info().rss
         return total
-    except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess) as e:
-        print(f"Error accessing process {process.pid}: {e}")
+    except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
+        print(f"Error accessing process {process.pid}")  # Removido 'as e'
         return 0
 
 def show_process_memory_usage(process: psutil.Process, level=0):
@@ -80,11 +80,12 @@ def show_process_memory_usage(process: psutil.Process, level=0):
     try:
         nice_value = process.nice()
         color = NICE_COLORS.get(nice_value, "\033[0m")  # Default color if not found
-        print("  " * level + "{color}{process.pid} - {process.name()} ({process.memory_info().rss / (1024 * 1024):.2f} MB)\033[0m")
+        # Corrigido o uso da variável 'color' na f-string
+        print(f"  " * level + f"{color}{process.pid} - {process.name()} ({process.memory_info().rss / (1024 * 1024):.2f} MB)\033[0m")  
         for child in process.children():
             show_process_memory_usage(child, level + 1)
-    except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess) as e:
-        print("  " * level + "Error accessing process {process.pid}: {e}")
+    except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
+        print(f"  " * level + f"Error accessing process {process.pid}")  # Removido 'as e'
 
 
 if __name__ == '__main__':

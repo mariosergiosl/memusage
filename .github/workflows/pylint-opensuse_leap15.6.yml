@@ -1,0 +1,36 @@
+name: Pylint
+
+on: [push]
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    container: opensuse/leap:15.6  # Especifica o contêiner openSUSE
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.9'
+    - name: Install dependencies
+      run: |
+        python3.9 -m pip install --upgrade pip
+        python3.9 -m pip install pylint psutil
+    - name: Check for psutil installation
+      run: |
+        # Check if psutil is installed
+        if ! pip show psutil; then
+          echo "psutil is not installed."
+          exit 1
+        fi
+    - name: Verify psutil with Python
+      run: |
+        python3.9 -c "import psutil; print(psutil.__version__)"
+    - name: Print environment variables
+      run: |
+        echo "PATH: $PATH"
+        echo "PYTHONPATH: $PYTHONPATH"
+        echo "VIRTUAL_ENV: $VIRTUAL_ENV"
+    - name: Analysing the code with pylint
+      run: |
+        python3.9 -m pylint --rcfile=.pylintrc --init-hook="import sys; sys.path.append('.')" $(git ls-files '*.py')
