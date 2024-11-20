@@ -11,7 +11,7 @@ jobs:
       run: zypper ref; zypper in -y tar gzip python39; zypper up -y
  
     - name: Update python pip
-      run: /usr/bin/python3.9 -m ensurepip --upgrade | /usr/bin/python3.9 -m pip install --upgrade pip
+      run: /usr/bin/python3.9 -m ensurepip --upgrade ; /usr/bin/python3.9 -m pip install --upgrade pip
       
     - name: Install  python packages
       run: /usr/bin/python3.9 -m pip install pylint psutil
