@@ -11,7 +11,7 @@ jobs:
       run: zypper ref; zypper in -y tar gzip python39; zypper up -y
  
     - name: Check Python
-      run: whereis python
+      run: whereis python; find / -name python*
 
     - name: Update python pip
       run: python39 -m pip install --upgrade pip
