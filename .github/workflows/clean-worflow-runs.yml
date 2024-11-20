@@ -18,14 +18,24 @@ jobs:
         with:
           script: |
             const { owner, repo } = context.repo;
-            const runs = await github.rest.actions.listWorkflowRunsForRepo({
-              owner,
-              repo,
-            });
-            for (const run of runs.data.workflow_runs) {
-              await github.rest.actions.deleteWorkflowRun({
+
+            async function deleteWorkflowRunsByStatus(status) {
+              const runs = await github.rest.actions.listWorkflowRunsForRepo({
                 owner,
                 repo,
-                run_id: run.id,
+                status: status,
               });
+              for (const run of runs.data.workflow_runs) {
+                await github.rest.actions.deleteWorkflowRun({
+                  owner,
+                  repo,
+                  run_id: run.id,
+                });
+              }
             }
+
+            await deleteWorkflowRunsByStatus('failure');
+
+            await deleteWorkflowRunsByStatus('cancelled');
+
+            await deleteWorkflowRunsByStatus('timed_out');
