@@ -1,5 +1,11 @@
 # tests/test_memusage.py
 
+import sys
+import os
+
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
+
 import memusage
 
 def test_get_total_memory():
