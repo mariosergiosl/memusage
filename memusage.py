@@ -25,15 +25,46 @@ import psutil
 
 # Colors for process priority
 NICE_COLORS = {
-    -20: "\033[91m",  # Red
-    -15: "\033[91m",  # Red
-    -10: "\033[93m",  # Yellow
-     -5: "\033[93m",  # Yellow
-      0: "\033[92m",  # Green
-      5: "\033[92m",  # Green
-     10: "\033[94m",  # Blue
-     15: "\033[94m",  # Blue
-     19: "\033[90m",  # Grey
+    -20: "\033[91m",  # Vermelho
+    -19: "\033[91m",  # Vermelho
+    -18: "\033[91m",  # Vermelho
+    -17: "\033[91m",  # Vermelho
+    -16: "\033[91m",  # Vermelho
+    -15: "\033[91m",  # Vermelho
+    -14: "\033[93m",  # Amarelo
+    -13: "\033[93m",  # Amarelo
+    -12: "\033[93m",  # Amarelo
+    -11: "\033[93m",  # Amarelo
+    -10: "\033[93m",  # Amarelo
+    -9: "\033[93m",  # Amarelo
+    -8: "\033[92m",  # Verde
+    -7: "\033[92m",  # Verde
+    -6: "\033[92m",  # Verde
+    -5: "\033[92m",  # Verde
+    -4: "\033[92m",  # Verde
+    -3: "\033[92m",  # Verde
+    -2: "\033[92m",  # Verde
+    -1: "\033[92m",  # Verde
+    0: "\033[92m",  # Verde
+    1: "\033[92m",  # Verde
+    2: "\033[92m",  # Verde
+    3: "\033[92m",  # Verde
+    4: "\033[92m",  # Verde
+    5: "\033[92m",  # Verde
+    6: "\033[94m",  # Azul
+    7: "\033[94m",  # Azul
+    8: "\033[94m",  # Azul
+    9: "\033[94m",  # Azul
+    10: "\033[94m",  # Azul
+    11: "\033[94m",  # Azul
+    12: "\033[94m",  # Azul
+    13: "\033[94m",  # Azul
+    14: "\033[94m",  # Azul
+    15: "\033[94m",  # Azul
+    16: "\033[90m",  # Cinza
+    17: "\033[90m",  # Cinza
+    18: "\033[90m",  # Cinza
+    19: "\033[90m",  # Cinza
 }
 
 def get_total_memory() -> float:
@@ -66,7 +97,7 @@ def get_process_memory_usage(process: psutil.Process) -> int:
             total += child.memory_info().rss
         return total
     except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
-        print(f"Error accessing process {process.pid}")  # Removido 'as e'
+        print(f"Error accessing process {process.pid}") 
         return 0
 
 def show_process_memory_usage(process: psutil.Process, level=0):
@@ -79,12 +110,12 @@ def show_process_memory_usage(process: psutil.Process, level=0):
 
     try:
         nice_value = process.nice()
-        color = NICE_COLORS.get(nice_value, "\033[0m")  # Default color if not found
+        color = NICE_COLORS.get(nice_value, "\033[0m")
         print(f"  " * level + f"{color}{process.pid} - {process.name()} ({process.memory_info().rss / (1024 * 1024):.2f} MB)\033[0m")
         for child in process.children():
             show_process_memory_usage(child, level + 1)
     except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
-        print("  " * level + "Error accessing process {process.pid}")
+        print(f"  " * level + f"Error accessing process {process.pid}")
 
 
 if __name__ == '__main__':
