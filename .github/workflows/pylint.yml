@@ -10,8 +10,9 @@ jobs:
     - name: Lint with pylint
       uses: docker://opensuse/leap:15.6
       with:
-        entrypoint: /bin/sh
+        entrypoint: /bin/bash -x
         args: |
           zypper ref
+          zypper in -y tar
           zypper in -y pylint
           pylint --rcfile=.pylintrc $(git ls-files '*.py')
