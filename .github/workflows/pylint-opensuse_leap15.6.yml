@@ -1,4 +1,4 @@
-name: Pylint
+name: Pylint opensuse/leap:15.6
 
 on: [push]
 
