@@ -17,20 +17,23 @@ jobs:
         key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
         restore-keys: |
           ${{ runner.os }}-pip-
+
+    - name: Install dependencies
+      run: |
+        zypper ref
+        zypper in -y tar
+        zypper in -y git
+        zypper in -y pylint
+    - name: Add tar to PATH  # Novo passo
+      run: echo "PATH=$PATH:/usr/bin" >> $GITHUB_ENV
+          
     - uses: actions/checkout@v3    # 4 show erros with tar
     - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v4
       with:
         python-version: ${{ matrix.python-version }}
         architecture: 'x64'
-    - name: Install dependencies
-      run: |
-        zypper ref
-        zypper in -y tar 
-        zypper in -y git 
-        zypper in -y pylint 
-    - name: Add tar to PATH  # Novo passo
-      run: echo "PATH=$PATH:/usr/bin" >> $GITHUB_ENV
+
     - name: Analysing the code with pylint
       run: |
         pylint --rcfile=.pylintrc $(git ls-files '*.py')
