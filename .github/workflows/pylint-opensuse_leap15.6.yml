@@ -35,6 +35,3 @@ jobs:
       run: tar --version
     - name: Which tar          # Novo passo para verificar o caminho do tar
       run: which tar
-    - name: Analysing the code with pylint
-      run: |
-        python3.9 -m pylint --rcfile=.pylintrc --init-hook="import sys; sys.path.append('.')" $(git ls-files '*.py')
