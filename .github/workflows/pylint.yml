@@ -10,7 +10,7 @@ jobs:
     - name: Lint with pylint
       uses: docker://opensuse/leap:15.6
       with:
-        entrypoint: /bin/bash -x
+        entrypoint: /bin/bash
         args: |
           zypper ref
           zypper in -y tar
