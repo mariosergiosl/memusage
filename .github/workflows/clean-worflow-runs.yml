@@ -3,6 +3,7 @@ name: Limpar workflows com falhas
 on:
   schedule:
     - cron: '0 0 * * *' # Executa diariamente à meia-noite
+  workflow_dispatch: {}
 
 jobs:
   limpar:
