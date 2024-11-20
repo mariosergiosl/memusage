@@ -6,14 +6,19 @@ jobs:
   lint:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
-    - name: Lint with pylint
-      uses: docker://opensuse/tumbleweed:latest
+    - name: Setup openSUSE
+      uses: jirutka/setup-opensuse@v1
       with:
-        entrypoint: /bin/bash
-        args: |
-          rpm -Uvh http://download.opensuse.org/tumbleweed/repo/oss/x86_64/zypper-1.14.51-1.1.x86_64.rpm
-          zypper ref
-          zypper in -y tar
-          zypper in -y pylint
-          pylint --rcfile=.pylintrc $(git ls-files '*.py')
+        version: '15.6'
+    - name: Set up Git
+      uses: actions/setup-git@v3
+      with:
+        git-version: '2.39.2'
+    - name: Add tar to PATH 
+      run: echo "PATH=$PATH:/usr/bin" >> $GITHUB_ENV
+    - uses: actions/checkout@v2
+    - name: Lint with pylint
+      run: |
+        zypper ref
+        zypper in -y pylint
+        pylint --rcfile=.pylintrc $(git ls-files '*.py')
