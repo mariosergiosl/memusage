@@ -7,7 +7,8 @@ disable=
     missing-function-docstring,
     too-many-arguments,
     invalid-name,
-    line-too-long
+    line-too-long,
+    f-string-without-interpolation
 extension-pkg-whitelist=psutil
 
 [MESSAGES CONTROL]
