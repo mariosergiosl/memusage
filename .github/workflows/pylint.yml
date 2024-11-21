@@ -25,7 +25,7 @@ jobs:
     - name: Verify psutil with Python
       run: |
         python3.9 -c "import psutil; print(psutil.__version__)"
-        python3.9 -c "import psutil; print(pylint.__version__)"
+        python3.9 -c "import pylint; print(pylint.__version__)"
     - name: Print environment variables
       run: |
         echo "PATH: $PATH"
