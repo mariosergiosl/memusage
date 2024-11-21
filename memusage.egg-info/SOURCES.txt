@@ -1,0 +1,8 @@
+README.md
+setup.py
+memusage.egg-info/PKG-INFO
+memusage.egg-info/SOURCES.txt
+memusage.egg-info/dependency_links.txt
+memusage.egg-info/entry_points.txt
+memusage.egg-info/requires.txt
+memusage.egg-info/top_level.txt

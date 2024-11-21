@@ -10,10 +10,10 @@ with open("README.md", "r", encoding="utf-8") as fh:
     long_description = fh.read()
 
 setup(
-    name='memusage',
+    name='memusage_plus',
     version='0.1.0',
     author='Mario Sergio',
-    author_email='mariosergiosl@gmail.com',
+    author_email='mario.mssl[at]gmail.com',
     description='A tool to display memory usage of processes on a Linux system',
     long_description=long_description,
     long_description_content_type="text/markdown",
