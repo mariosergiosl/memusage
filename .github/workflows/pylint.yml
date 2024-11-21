@@ -32,6 +32,4 @@ jobs:
         echo "VIRTUAL_ENV: $VIRTUAL_ENV"
     - name: Analysing the code with pylint
       run: |
-        python3.9 -m pylint --rcfile=.pylintrc \
-        --init-hook="import sys; sys.path.append('${{ github.workspace }}')" \
-        $(git ls-files '*.py')
+        python -m pylint --rcfile=.pylintrc --init-hook="import sys; sys.path.append('.')" $(git ls-files '*.py')
