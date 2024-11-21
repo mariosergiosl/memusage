@@ -27,6 +27,4 @@ jobs:
         persist-credentials: true
 
     - name: Analysing the code with pylint
-      run: |
-        cd /__w/memusage
-        /usr/bin/python3.9 -m pylint --rcfile=.pylintrc $(git ls-files '*.py') 
+      run: /usr/bin/python3.9 -m pylint --rcfile=.pylintrc $(git ls-files '*.py') 
