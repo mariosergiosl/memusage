@@ -67,6 +67,7 @@ NICE_COLORS = {
     19: "\033[90m",  # Grey
 }
 
+
 def get_total_memory() -> float:
     """Returns the total system memory in MB."""
     mem = psutil.virtual_memory()
@@ -202,7 +203,7 @@ if __name__ == '__main__':
     print("\nPriority Color Table:")
     for nice_value, color in NICE_COLORS.items():
         # Using f-string to interpolate color variable and print colored output
-        print(f"{color}Priority: {nice_value}\tColor: {color}{color}\033[0m") 
+        print(f"{color}Priority: {nice_value}\tColor: {color}{color}\033[0m")
 
     print("Total system memory:", get_total_memory(), "MB")
     print("Free system memory:", get_free_memory(), "MB")

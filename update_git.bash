@@ -1,21 +1,23 @@
 #!/bin/bash
 #===============================================================================
 #
-# FILE: update_git.sh
+# FILE: update_git.bash
 #
-# USAGE: update_git.sh [commit message]
+# USAGE: update_git.bash [commit message]
 #
 # DESCRIPTION: This script updates a Git repository with the latest changes.
 #              If a commit message is provided as an argument, it uses that.
 #              Otherwise, it shows the list of changed files and prompts 
 #              the user for a commit message (optional). If no message is 
 #              entered, it uses a default message with the files list.
+#              This script only runs if the 'run_python_test.bash' script 
+#              is successful.
 #
 # OPTIONS:
 #    -h, --help       Display this help message
 #    -v, --version    Display script version
 #
-# REQUIREMENTS: git
+# REQUIREMENTS: git, run_python_test.bash
 #
 # BUGS:
 #
@@ -26,13 +28,13 @@
 #
 # COMPANY:
 #
-# VERSION: 1.2
+# VERSION: 1.3
 # CREATED: 2024-11-18 17:00:00
-# REVISION: 2024-11-21 15:00:00
+# REVISION: 2024-11-21 20:00:00
 #===============================================================================
 
 # Set script version
-SCRIPT_VERSION="1.2"
+SCRIPT_VERSION="1.3"
 
 # Display help message
 show_help() {
@@ -75,33 +77,44 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
-# Check if there are uncommitted changes
-if ! git diff-index --quiet HEAD --; then
-  # Add all changes to the staging area
-  git add .
+# Run the Python tests
+echo "Running Python tests..."
+./run_python_test.bash
 
-  # Get the list of updated files
-  updated_files=$(git diff --cached --name-only)
+# Check the exit code of the Python tests
+if [[ $? -eq 0 ]]; then
+  echo "Python tests passed."
 
-  # Display the list of updated files and prompt for a commit message
-  echo "Updating the following files:"
-  echo "$updated_files"
-  echo "Press Enter to use the default commit message or type a custom message:"
-  #read -r -p "Commit message: " commit_message
+  # Check if there are uncommitted changes
+  if ! git diff-index --quiet HEAD --; then
+    # Add all changes to the staging area
+    git add .
 
-  # Use the default commit message if none is provided
-  if [[ -z "$commit_message" ]]; then
-    commit_message="Updating files: $updated_files"
+    # Get the list of updated files
+    updated_files=$(git diff --cached --name-only)
+
+    # Display the list of updated files and prompt for a commit message
+    echo "Updating the following files:"
+    echo "$updated_files"
+    echo "Press Enter to use the default commit message or type a custom message:"
+    #read -r -p "Commit message: " commit_message
+
+    # Use the default commit message if none is provided
+    if [[ -z "$commit_message" ]]; then
+      commit_message="Updating files: $updated_files"
+    fi
+
+    # Commit the changes with the updated files list as the comment
+    git commit -m "$commit_message"
+
+    # Pull the latest changes from the remote repository
+    git pull origin main
+
+    # Push the changes to the remote repository
+    git push origin main
+  else
+    echo "No changes to commit."
   fi
-
-  # Commit the changes with the updated files list as the comment
-  git commit -m "$commit_message"
-
-  # Pull the latest changes from the remote repository
-  git pull origin main
-
-  # Push the changes to the remote repository
-  git push origin main
 else
-  echo "No changes to commit."
+  echo "Python tests failed. Aborting Git update."
 fi

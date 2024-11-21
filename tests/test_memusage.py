@@ -1,5 +1,9 @@
 # tests/test_memusage.py
 
+"""
+Test suite for the memusage module.
+"""
+
 import sys
 import os
 import psutil
