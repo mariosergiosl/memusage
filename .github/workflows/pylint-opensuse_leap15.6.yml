@@ -27,4 +27,6 @@ jobs:
         persist-credentials: true
 
     - name: Analysing the code with pylint
-      run: /usr/bin/python3.9 -m pylint --rcfile=.pylintrc --init-hook="import sys; sys.path.append('.')" $(git ls-files '*.py')        
+      run: |
+        cd /__w/memusage/memusage
+        /usr/bin/python3.9 -m pylint --rcfile=.pylintrc $(git ls-files '*.py') 
