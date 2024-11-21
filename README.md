@@ -5,9 +5,15 @@ This tool displays the memory usage of processes on a Linux system.
 ## Features
 
 * Shows total system memory, free memory, and used memory.
-* Displays the memory usage of each process in a hierarchical tree format.
+* Displays process information in a hierarchical tree format.
 * Calculates the total memory usage of a process and its children.
-* **Color-coded output based on process priority.**
+* Shows open files for each process.
+* Displays network connections for each process, including:
+    * Local and remote addresses
+    * Status
+    * Sent and received bytes (for established connections)
+* Shows I/O activity for each process, including read and write bytes.
+* Color-coded output based on process priority.
 
 ## Installation
 
@@ -43,6 +49,16 @@ The output will show:
 * Used system memory
 * Total memory usage of the process tree
 * Memory usage of each process with its PID, name, and memory consumption, color-coded by priority:
+* For each process:
+    * PID
+    * Process name
+    * Memory usage
+    * Open files
+    * Network connections
+    * I/O activity (read and write bytes)
+    * Note: The Read bytes and Write bytes values are cumulative.
+
+* The output is color-coded based on process priority:
 
 | Priority   | Color     |  Nice Value  |
 |------------|-----------|--------------|
@@ -78,108 +94,314 @@ After running these commands, execute memusage again and observe the color-coded
 
 
 ```bash
-memusage
-Total system memory: 7877.40234375 MB
-Free system memory: 6951.796875 MB
-Used system memory: 925.60546875 MB
+Priority Color Table:
+Priority: -20   Color:
+Priority: -19   Color:
+Priority: -18   Color:
+Priority: -17   Color:
+Priority: -16   Color:
+Priority: -15   Color:
+Priority: -14   Color:
+Priority: -13   Color:
+Priority: -12   Color:
+Priority: -11   Color:
+Priority: -10   Color:
+Priority: -9    Color:
+Priority: -8    Color:
+Priority: -7    Color:
+Priority: -6    Color:
+Priority: -5    Color:
+Priority: -4    Color:
+Priority: -3    Color:
+Priority: -2    Color:
+Priority: -1    Color:
+Priority: 0     Color:
+Priority: 1     Color:
+Priority: 2     Color:
+Priority: 3     Color:
+Priority: 4     Color:
+Priority: 5     Color:
+Priority: 6     Color:
+Priority: 7     Color:
+Priority: 8     Color:
+Priority: 9     Color:
+Priority: 10    Color:
+Priority: 11    Color:
+Priority: 12    Color:
+Priority: 13    Color:
+Priority: 14    Color:
+Priority: 15    Color:
+Priority: 16    Color:
+Priority: 17    Color:
+Priority: 18    Color:
+Priority: 19    Color:
+Total system memory: 7877.39453125 MB
+Free system memory: 7270.83203125 MB
+Used system memory: 606.5625 MB
 
-Total memory usage of the process tree: 1229.4296875 MB
+Total mem. process tree: 577.58203125 MB
 
 Memory usage of each process:
 PID - Process Name (Memory Usage)
-1 - systemd (14.53 MB)
-  646 - systemd-journald (10.50 MB)
-  672 - systemd-udevd (12.95 MB)
-  744 - haveged (4.99 MB)
-  861 - auditd (3.76 MB)
-  868 - avahi-daemon (3.50 MB)
-  869 - dbus-daemon (5.94 MB)
-  873 - irqbalance (5.32 MB)
-  880 - polkitd (11.45 MB)
-  883 - VGAuthService (10.12 MB)
-  890 - nscd (4.63 MB)
-  892 - wickedd-auto4 (5.88 MB)
-  896 - vmware-vmblock-fuse (5.41 MB)
-  898 - wickedd-dhcp4 (6.38 MB)
-  902 - wickedd-dhcp6 (6.38 MB)
-  992 - systemd-logind (8.50 MB)
-  994 - wickedd (6.25 MB)
-  995 - ModemManager (13.81 MB)
-  999 - vmtoolsd (15.29 MB)
-  1003 - wickedd-nanny (6.12 MB)
-  1434 - cupsd (10.25 MB)
-  1443 - rsyslogd (5.50 MB)
-  1449 - chronyd (6.16 MB)
-  1454 - sshd (9.25 MB)
-    44959 - sshd (10.50 MB)
-      44963 - sshd (6.75 MB)
-        44964 - bash (5.25 MB)
-          45317 - vim (11.88 MB)
-    44961 - sshd (10.75 MB)
-      45012 - sshd (6.50 MB)
-        45013 - sftp-server (4.50 MB)
-    45328 - sshd (10.75 MB)
-      45332 - sshd (6.77 MB)
-        45333 - bash (5.25 MB)
-          45410 - memusage (12.25 MB)
-    45330 - sshd (10.62 MB)
-      45381 - sshd (6.38 MB)
-        45382 - sftp-server (4.38 MB)
-  1560 - lightdm (10.76 MB)
-    1567 - X (138.99 MB)
-    1751 - lightdm (11.82 MB)
-      1792 - lxsession (17.95 MB)
-        1845 - ssh-agent (1.70 MB)
-        1846 - gpg-agent (2.50 MB)
-        1870 - openbox (25.73 MB)
-        1871 - lxpolkit (16.29 MB)
-        1873 - lxpanel (42.46 MB)
-          2135 - lxterminal (55.01 MB)
-            2139 - bash (5.25 MB)
-        1875 - pcmanfm (54.72 MB)
-        1876 - xscreensaver (3.31 MB)
-          1893 - xscreensaver-systemd (3.88 MB)
-          45113 - xscreensaver-gfx (5.10 MB)
-        1878 - lxclipboard (14.93 MB)
-  1575 - accounts-daemon (7.18 MB)
-  1576 - agetty (2.38 MB)
-  1647 - master (5.05 MB)
-    1649 - qmgr (9.00 MB)
-    44329 - pickup (8.62 MB)
-  1670 - cron (2.75 MB)
-  1776 - systemd (12.12 MB)
-    1777 - (sd-pam) (5.97 MB)
-    1803 - dbus-daemon (4.62 MB)
-    1854 - gvfsd (7.12 MB)
-      2105 - gvfsd-trash (11.82 MB)
-    1860 - gvfsd-fuse (10.59 MB)
-    1995 - gvfs-udisks2-volume-monitor (14.95 MB)
-    2020 - gvfs-goa-volume-monitor (8.16 MB)
-    2025 - goa-daemon (41.04 MB)
-    2027 - xdg-desktop-portal (22.74 MB)
-    2033 - xdg-document-portal (11.21 MB)
-      2044 - fusermount3 (1.75 MB)
-    2037 - xdg-permission-store (10.68 MB)
-    2058 - goa-identity-service (13.59 MB)
-    2060 - gvfs-afc-volume-monitor (10.21 MB)
-    2072 - gvfs-mtp-volume-monitor (10.16 MB)
-    2079 - xdg-desktop-portal-gtk (22.58 MB)
-    2080 - gvfs-gphoto2-volume-monitor (8.63 MB)
-    2097 - pipewire (7.88 MB)
-    2098 - wireplumber (13.54 MB)
-    44729 - gnome-keyring-daemon (10.86 MB)
-  1880 - agent (5.88 MB)
-  1882 - ssh-agent (1.59 MB)
-  1900 - nm-applet (38.25 MB)
-  1907 - pk-update-icon (16.75 MB)
-  1914 - vmtoolsd (44.95 MB)
-  1923 - parcellite (18.91 MB)
-  1927 - applet.py (32.33 MB)
-  1930 - xfce4-power-manager (23.02 MB)
-  1975 - menu-cached (5.90 MB)
-  1985 - upowerd (11.05 MB)
-  2004 - udisksd (16.44 MB)
-  2050 - rtkit-daemon (3.38 MB)
+1 - systemd (13.69 MB)
+  - /proc/swaps
+  - /proc/1/mountinfo
+  - Read bytes: 247741952
+  - Write bytes: 164270080
+  643 - systemd-journald (9.38 MB)
+    - /proc/sys/kernel/hostname
+    - /run/log/journal/24a550029dff4a95994d4266dd0763e7/system.journal
+    - Read bytes: 225280
+    - Write bytes: 0
+  669 - systemd-udevd (12.88 MB)
+    - /etc/udev/hwdb.bin
+    - Read bytes: 26705408
+    - Write bytes: 0
+  747 - haveged (4.99 MB)
+    - Read bytes: 135168
+    - Write bytes: 0
+  864 - auditd (3.76 MB)
+    - /var/log/audit/audit.log
+    - Read bytes: 4096
+    - Write bytes: 393216
+  871 - avahi-daemon (3.25 MB)
+      - Local Address: addr(ip='0.0.0.0', port=51517)
+      - Remote Address: ()
+      - Status: NONE
+      - Local Address: addr(ip='::', port=5353)
+      - Remote Address: ()
+      - Status: NONE
+      - Local Address: addr(ip='0.0.0.0', port=5353)
+      - Remote Address: ()
+      - Status: NONE
+      - Local Address: addr(ip='::', port=37507)
+      - Remote Address: ()
+      - Status: NONE
+    - Read bytes: 565248
+    - Write bytes: 0
+  872 - dbus-daemon (5.43 MB)
+    - Read bytes: 1236992
+    - Write bytes: 0
+  878 - irqbalance (5.25 MB)
+    - Read bytes: 323584
+    - Write bytes: 0
+  884 - polkitd (7.70 MB)
+    - Read bytes: 3407872
+    - Write bytes: 0
+  889 - VGAuthService (10.38 MB)
+    - /var/log/vmware-vgauthsvc.log.0
+    - /var/log/vmware-vgauthsvc.log.0
+    - Read bytes: 3911680
+    - Write bytes: 8192
+  898 - wickedd-auto4 (5.75 MB)
+    - Read bytes: 462848
+    - Write bytes: 0
+  899 - wickedd-dhcp4 (6.12 MB)
+      - Local Address: addr(ip='0.0.0.0', port=68)
+      - Remote Address: ()
+      - Status: NONE
+    - Read bytes: 1843200
+    - Write bytes: 3788800
+  900 - wickedd-dhcp6 (6.12 MB)
+    - Read bytes: 454656
+    - Write bytes: 0
+  910 - vmware-vmblock-fuse (3.39 MB)
+    - Read bytes: 0
+    - Write bytes: 0
+  926 - nscd (4.41 MB)
+    - /var/lib/nscd/services
+    - /var/lib/nscd/services
+    - /var/lib/nscd/netgroup
+    - /var/lib/nscd/passwd
+    - /var/lib/nscd/netgroup
+    - /var/lib/nscd/passwd
+    - /var/lib/nscd/group
+    - /var/lib/nscd/group
+    - Read bytes: 73728
+    - Write bytes: 1200128
+  997 - systemd-logind (8.50 MB)
+    - /sys/devices/virtual/tty/tty0/active
+    - Read bytes: 282624
+    - Write bytes: 0
+  999 - wickedd (6.25 MB)
+    - Read bytes: 380928
+    - Write bytes: 1798144
+  1000 - ModemManager (13.40 MB)
+    - Read bytes: 10084352
+    - Write bytes: 0
+  1004 - vmtoolsd (10.98 MB)
+    - /var/log/vmware-vmsvc-root.log
+    - /run/vmtoolsd.pid
+    - Read bytes: 2834432
+    - Write bytes: 69632
+  1007 - wickedd-nanny (6.38 MB)
+    - Read bytes: 69632
+    - Write bytes: 0
+  1488 - cupsd (9.75 MB)
+      - Local Address: addr(ip='127.0.0.1', port=631)
+      - Remote Address: ()
+      - Status: LISTEN
+      - Local Address: addr(ip='::1', port=631)
+      - Remote Address: ()
+      - Status: LISTEN
+    - Read bytes: 6889472
+    - Write bytes: 4096
+  1498 - rsyslogd (7.12 MB)
+    - /var/log/messages
+    - /var/log/warn
+    - /proc/kmsg
+    - Read bytes: 1036288
+    - Write bytes: 1093632
+  1503 - sshd (9.12 MB)
+      - Local Address: addr(ip='0.0.0.0', port=22)
+      - Remote Address: ()
+      - Status: LISTEN
+      - Local Address: addr(ip='::', port=22)
+      - Remote Address: ()
+      - Status: LISTEN
+    - Read bytes: 0
+    - Write bytes: 0
+    1808 - sshd (10.62 MB)
+      - /proc/sys/crypto/fips_enabled
+        - Local Address: addr(ip='192.168.111.128', port=22)
+        - Remote Address: addr(ip='192.168.111.1', port=11923)
+        - Status: ESTABLISHED
+      - Read bytes: 36864
+      - Write bytes: 8192
+      1824 - sshd (6.64 MB)
+        - /proc/sys/crypto/fips_enabled
+          - Local Address: addr(ip='::1', port=6010)
+          - Remote Address: ()
+          - Status: LISTEN
+          - Local Address: addr(ip='127.0.0.1', port=6010)
+          - Remote Address: ()
+          - Status: LISTEN
+          - Local Address: addr(ip='192.168.111.128', port=22)
+          - Remote Address: addr(ip='192.168.111.1', port=11923)
+          - Status: ESTABLISHED
+        - Read bytes: 16384
+        - Write bytes: 0
+        1825 - bash (5.38 MB)
+          - Read bytes: 204935168
+          - Write bytes: 72761344
+          22008 - python3 (12.00 MB)
+            - Read bytes: 0
+            - Write bytes: 0
+    1811 - sshd (10.62 MB)
+      - /proc/sys/crypto/fips_enabled
+        - Local Address: addr(ip='192.168.111.128', port=22)
+        - Remote Address: addr(ip='192.168.111.1', port=11925)
+        - Status: ESTABLISHED
+      - Read bytes: 638976
+      - Write bytes: 0
+      1839 - sshd (6.38 MB)
+        - /proc/sys/crypto/fips_enabled
+          - Local Address: addr(ip='192.168.111.128', port=22)
+          - Remote Address: addr(ip='192.168.111.1', port=11925)
+          - Status: ESTABLISHED
+        - Read bytes: 16384
+        - Write bytes: 0
+        1874 - sftp-server (4.25 MB)
+          - /proc/sys/crypto/fips_enabled
+          - Read bytes: 864256
+          - Write bytes: 0
+  1505 - chronyd (5.48 MB)
+      - Local Address: addr(ip='::1', port=323)
+      - Remote Address: ()
+      - Status: NONE
+      - Local Address: addr(ip='127.0.0.1', port=323)
+      - Remote Address: ()
+      - Status: NONE
+    - Read bytes: 0
+    - Write bytes: 798720
+  1621 - lightdm (8.36 MB)
+    - /var/log/lightdm/lightdm.log
+    - Read bytes: 26759168
+    - Write bytes: 20480
+    1627 - X (83.46 MB)
+      - /var/log/Xorg.0.log
+      - /proc/mtrr
+      - /proc/mtrr
+      - /var/log/lightdm/x-0.log
+      - /var/log/lightdm/x-0.log
+      - Read bytes: 156753920
+      - Write bytes: 98304
+    1742 - lightdm (13.52 MB)
+      - /var/log/lightdm/seat0-greeter.log
+      - Read bytes: 1445888
+      - Write bytes: 53248
+      1765 - lightdm-gtk-greeter (110.25 MB)
+        - /var/log/lightdm/seat0-greeter.log
+        - Read bytes: 32845824
+        - Write bytes: 4739072
+    1803 - lightdm (7.62 MB)
+      - Read bytes: 0
+      - Write bytes: 0
+  1629 - accounts-daemon (8.89 MB)
+    - Read bytes: 253952
+    - Write bytes: 0
+  1630 - agetty (2.38 MB)
+    - Read bytes: 163840
+    - Write bytes: 4096
+  1707 - master (5.03 MB)
+    - /var/spool/postfix/pid/master.pid
+    - /var/lib/postfix/master.lock
+      - Local Address: addr(ip='::1', port=25)
+      - Remote Address: ()
+      - Status: LISTEN
+      - Local Address: addr(ip='127.0.0.1', port=25)
+      - Remote Address: ()
+      - Status: LISTEN
+    - Read bytes: 61440
+    - Write bytes: 8192
+    1709 - qmgr (8.50 MB)
+      - /etc/postfix/relay.lmdb
+      - Read bytes: 192512
+      - Write bytes: 0
+    20189 - pickup (8.50 MB)
+      - Read bytes: 0
+      - Write bytes: 0
+  1730 - cron (2.62 MB)
+    - /run/cron.pid
+    - Read bytes: 176128
+    - Write bytes: 1196032
+  1755 - systemd (11.75 MB)
+    - /proc/1755/mountinfo
+    - /proc/swaps
+    - Read bytes: 655360
+    - Write bytes: 0
+    1756 - (sd-pam) (5.91 MB)
+      - Read bytes: 0
+      - Write bytes: 0
+    1767 - dbus-daemon (4.50 MB)
+      - Read bytes: 217088
+      - Write bytes: 0
+    1770 - gvfsd (8.97 MB)
+      - Read bytes: 1482752
+      - Write bytes: 0
+    1776 - gvfsd-fuse (10.38 MB)
+      - Read bytes: 94208
+      - Write bytes: 0
+  1814 - systemd (12.00 MB)
+    - /proc/1814/mountinfo
+    - /proc/swaps
+    - Read bytes: 0
+    - Write bytes: 0
+    1815 - (sd-pam) (5.91 MB)
+      - Read bytes: 0
+      - Write bytes: 0
+    16842 - dbus-daemon (4.38 MB)
+      - Read bytes: 0
+      - Write bytes: 0
+    16844 - gvfsd (9.01 MB)
+      - Read bytes: 0
+      - Write bytes: 0
+    16850 - gvfsd-fuse (10.38 MB)
+      - Read bytes: 0
+      - Write bytes: 0
+
+Read bytes and Write bytes - These values are cumulative.
+
 ```
 ## Contributing
 Contributions are welcome! Please open an issue or submit a pull request if you have any suggestions or bug reports.
