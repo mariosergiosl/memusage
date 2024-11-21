@@ -4,7 +4,7 @@ Version: 0.1.0
 Summary: A tool to display memory usage of processes on a Linux system
 Home-page: https://github.com/mariosergiosl/memusage
 Author: Mario Sergio
-Author-email: mariosergiosl@gmail.com
+Author-email: mario.mssl[at]gmail.com
 License: UNKNOWN
 Description: # Memory Usage Tool
         

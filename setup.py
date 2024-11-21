@@ -10,7 +10,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
     long_description = fh.read()
 
 setup(
-    name='memusage_plus',
+    name='memusage',
     version='0.1.0',
     author='Mario Sergio',
     author_email='mario.mssl[at]gmail.com',
