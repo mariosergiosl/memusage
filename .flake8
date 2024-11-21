@@ -1,6 +1,7 @@
 [flake8]
 max-line-length = 150
 ignore = F541
+ignore = F841
 extend-ignore = F541
 
 [pycodestyle]

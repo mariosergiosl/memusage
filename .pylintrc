@@ -9,6 +9,7 @@ disable=
     invalid-name,
     line-too-long,
     f-string-without-interpolation
+    W0621
 extension-pkg-whitelist=psutil
 
 [MESSAGES CONTROL]

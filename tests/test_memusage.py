@@ -39,6 +39,6 @@ def test_show_process_memory_usage():
     # Instead, we can check if it runs without errors.
     try:
         process = memusage.psutil.Process()
-        memusage.show_process_memory_usage(process)
+        memusage.show_process_tree(process)
     except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess) as e:
         assert False, f"show_process_memory_usage raised an exception: {e}"
