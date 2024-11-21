@@ -92,7 +92,7 @@ for file in $(find . -name "*.py"); do
     echo "********************************************************************"
     # Execute pylint on all .py files
     echo "Running Pylint..."
-    pylint --rcfile=.pylintrc "$file"
+    pylint --rcfile=.pylintrc --init-hook="import sys; sys.path.append('.')" "$file"
 
     # Execute flake8 on all .py files
     echo "Running Flake8..."
