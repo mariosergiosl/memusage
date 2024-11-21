@@ -25,48 +25,47 @@ import psutil
 
 # Colors for process priority
 NICE_COLORS = {
-    -20: "\033[91m",  # Vermelho
-    -19: "\033[91m",  # Vermelho
-    -18: "\033[91m",  # Vermelho
-    -17: "\033[91m",  # Vermelho
-    -16: "\033[91m",  # Vermelho
-    -15: "\033[91m",  # Vermelho
-    -14: "\033[93m",  # Amarelo
-    -13: "\033[93m",  # Amarelo
-    -12: "\033[93m",  # Amarelo
-    -11: "\033[93m",  # Amarelo
-    -10: "\033[93m",  # Amarelo
-    -9: "\033[93m",  # Amarelo
-    -8: "\033[92m",  # Verde
-    -7: "\033[92m",  # Verde
-    -6: "\033[92m",  # Verde
-    -5: "\033[92m",  # Verde
-    -4: "\033[92m",  # Verde
-    -3: "\033[92m",  # Verde
-    -2: "\033[92m",  # Verde
-    -1: "\033[92m",  # Verde
-    0: "\033[92m",  # Verde
-    1: "\033[92m",  # Verde
-    2: "\033[92m",  # Verde
-    3: "\033[92m",  # Verde
-    4: "\033[92m",  # Verde
-    5: "\033[92m",  # Verde
-    6: "\033[94m",  # Azul
-    7: "\033[94m",  # Azul
-    8: "\033[94m",  # Azul
-    9: "\033[94m",  # Azul
-    10: "\033[94m",  # Azul
-    11: "\033[94m",  # Azul
-    12: "\033[94m",  # Azul
-    13: "\033[94m",  # Azul
-    14: "\033[94m",  # Azul
-    15: "\033[94m",  # Azul
-    16: "\033[90m",  # Cinza
-    17: "\033[90m",  # Cinza
-    18: "\033[90m",  # Cinza
-    19: "\033[90m",  # Cinza
+    -20: "\033[91m",  # Red
+    -19: "\033[91m",  # Red
+    -18: "\033[91m",  # Red
+    -17: "\033[91m",  # Red
+    -16: "\033[91m",  # Red
+    -15: "\033[91m",  # Red
+    -14: "\033[93m",  # Yellow
+    -13: "\033[93m",  # Yellow
+    -12: "\033[93m",  # Yellow
+    -11: "\033[93m",  # Yellow
+    -10: "\033[93m",  # Yellow
+    -9: "\033[93m",  # Yellow
+    -8: "\033[92m",  # Green
+    -7: "\033[92m",  # Green
+    -6: "\033[92m",  # Green
+    -5: "\033[92m",  # Green
+    -4: "\033[92m",  # Green
+    -3: "\033[92m",  # Green
+    -2: "\033[92m",  # Green
+    -1: "\033[92m",  # Green
+    0: "\033[92m",  # Green
+    1: "\033[92m",  # Green
+    2: "\033[92m",  # Green
+    3: "\033[92m",  # Green
+    4: "\033[92m",  # Green
+    5: "\033[92m",  # Green
+    6: "\033[94m",  # Blue
+    7: "\033[94m",  # Blue
+    8: "\033[94m",  # Blue
+    9: "\033[94m",  # Blue
+    10: "\033[94m",  # Blue
+    11: "\033[94m",  # Blue
+    12: "\033[94m",  # Blue
+    13: "\033[94m",  # Blue
+    14: "\033[94m",  # Blue
+    15: "\033[94m",  # Blue
+    16: "\033[90m",  # Grey
+    17: "\033[90m",  # Grey
+    18: "\033[90m",  # Grey
+    19: "\033[90m",  # Grey
 }
-
 
 def get_total_memory() -> float:
     """Returns the total system memory in MB."""
@@ -105,26 +104,105 @@ def get_process_memory_usage(process: psutil.Process) -> int:
         return 0
 
 
-def show_process_memory_usage(process: psutil.Process, level=0):
-    """Displays the memory usage of a process and its children recursively.
+def get_open_files(process: psutil.Process) -> list:
+    """
+    Retrieves a list of open files for a given process.
 
     Args:
-        process (psutil.Process): The process to display memory usage for.
-        level (int, optional): The indentation level. Defaults to 0.
-    """
+      process: The psutil.Process object.
 
+    Returns:
+      A list of open files.
+    """
+    try:
+        return process.open_files()
+    except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
+        return []
+
+
+def get_connections(process: psutil.Process) -> list:
+    """
+    Retrieves a list of network connections for a given process.
+
+    Args:
+      process: The psutil.Process object.
+
+    Returns:
+      A list of network connections.
+    """
+    try:
+        return process.connections()
+    except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
+        return []
+
+
+def get_io_counters(process: psutil.Process):
+    """
+    Retrieves I/O counters for a given process.
+
+    Args:
+      process: The psutil.Process object.
+
+    Returns:
+      The I/O counters.
+    """
+    try:
+        return process.io_counters()
+    except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
+        return None
+
+
+def show_process_tree(process: psutil.Process, level=0):
+    """Displays the process tree with memory usage, open files,
+       network connections, and I/O counters.
+    """
     try:
         nice_value = process.nice()
         color = NICE_COLORS.get(nice_value, "\033[0m")
+        # Usando f-strings aninhadas para interpolar as variáveis 'color' e 'level'
         print(f"  " * level + f"{color}{process.pid} - {process.name()} ({process.memory_info().rss / (1024 * 1024):.2f} MB)\033[0m")
+
+        # Open files (removendo duplicatas)
+        open_files = list(set(get_open_files(process)))
+        if open_files:
+            for file in open_files:
+                print(f"{'  ' * (level + 1)}- {file.path}")
+
+        # Network connections (exibindo informações resumidas)
+        connections = get_connections(process)
+        if connections:
+            for conn in connections:
+                # Indentação e títulos para informações de rede
+                print(f"{'  ' * (level + 1)}  - Local Address: {conn.laddr}")
+                print(f"{'  ' * (level + 1)}  - Remote Address: {conn.raddr}")
+                print(f"{'  ' * (level + 1)}  - Status: {conn.status}")
+                # Exibe bytes enviados e recebidos apenas para conexões estabelecidas
+                if conn.status == 'ESTABLISHED' and hasattr(conn, 'sent_bytes') and hasattr(conn, 'recv_bytes'):
+                    print(f"{'  ' * (level + 2)}- Sent bytes: {conn.sent_bytes}")
+                    print(f"{'  ' * (level + 2)}- Received bytes: {conn.recv_bytes}")
+
+        # I/O counters
+        io_counters = get_io_counters(process)
+        if io_counters:
+            print(f"{'  ' * (level + 1)}- Read bytes: {io_counters.read_bytes}")
+            print(f"{'  ' * (level + 1)}- Write bytes: {io_counters.write_bytes}")
+
         for child in process.children():
-            show_process_memory_usage(child, level + 1)
+            show_process_tree(child, level + 1)
+
     except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
-        print(f"  " * level + f"Error accessing process {process.pid}")
+        # Usando string literal, pois não há interpolação de variáveis
+        print("  " * level + "Error accessing process {process.pid}")
 
 
 if __name__ == '__main__':
     main_process = psutil.Process(1)
+
+    # Print Priority Color Table
+    print("\nPriority Color Table:")
+    for nice_value, color in NICE_COLORS.items():
+        # Using f-string to interpolate color variable and print colored output
+        print(f"{color}Priority: {nice_value}\tColor: {color}{color}\033[0m")  
 
     print("Total system memory:", get_total_memory(), "MB")
     print("Free system memory:", get_free_memory(), "MB")
@@ -134,4 +212,7 @@ if __name__ == '__main__':
 
     print("\nMemory usage of each process:")
     print("PID - Process Name (Memory Usage)")
-    show_process_memory_usage(main_process)
+    show_process_tree(main_process)
+
+    # Mensagem sobre valores cumulativos de E/S
+    print("\nRead bytes and Write bytes - These values are cumulative.")
