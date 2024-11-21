@@ -25,6 +25,7 @@ jobs:
     - name: Verify psutil with Python
       run: |
         python3.9 -c "import psutil; print(psutil.__version__)"
+        python3.9 -c "import psutil; print(pylint.__version__)"
     - name: Print environment variables
       run: |
         echo "PATH: $PATH"
@@ -33,5 +34,5 @@ jobs:
     - name: Analysing the code with pylint
       run: |
         python3.9 -m pylint --rcfile=.pylintrc \
-          --init-hook="import sys; sys.path.append('${{ github.workspace }}')" \  # Ajustado o --init-hook
+          --init-hook="import sys; sys.path.append('${{ github.workspace }}')" \
           $(git ls-files '*.py')
