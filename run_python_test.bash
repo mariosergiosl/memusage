@@ -19,17 +19,17 @@
 # NOTES:
 #
 # AUTHOR:
-#   Mario Luz (ml), mario.mssl@gmail.com
+#   Mario Luz (ml), mario.mssl[at]gmail.com
 #
 # COMPANY:
 #
-# VERSION: 1.0
-# CREATED: 2024-11-21 17:00:00
-# REVISION:
+# VERSION: 1.2
+# CREATED: 2024-11-18 17:00:00
+# REVISION:2024-11-22 11:00:00
 #===============================================================================
 
 # Set script version
-SCRIPT_VERSION="1.0"
+SCRIPT_VERSION="1.2"
 
 # Display help message
 show_help() {
@@ -84,6 +84,8 @@ if ! command -v flake8 &> /dev/null; then
     echo "Flake8 is not installed. Install it with 'pip install flake8'."
     exit 1
 fi
+
+export PYTHONPATH="${PYTHONPATH}:$(dirname $(pwd))"
 
 # Execute pylint and flake8 on all .py files
 echo "Running tests..."
