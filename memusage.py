@@ -36,6 +36,7 @@ import re
 import socket  # To use socket.AF_UNIX directly if psutil.AF_UNIX is missing
 import subprocess
 import hashlib  # For calculating file hashes
+import sys
 
 import psutil  # psutil is a third-party library
 
@@ -715,7 +716,7 @@ if __name__ == '__main__':
         main_process = psutil.Process(1)
     except psutil.NoSuchProcess:
         print("Error: Init process (PID 1) not found. System might not be initialized or you lack permissions.")
-        exit(1)
+        sys.exit(1)
 
     print(f"\nTotal memory process tree: {get_process_memory_usage(main_process) / (1024 * 1024):.2f} MB")
 
