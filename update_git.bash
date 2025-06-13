@@ -112,7 +112,10 @@ if [[ $? -eq 0 ]]; then
 
     # Push the changes to the remote repository
     git push origin main
-  else
+
+    # Push the tags to the remote repository
+    git push origin --tags
+else
     echo "No changes to commit."
   fi
 else
