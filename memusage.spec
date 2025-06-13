@@ -6,7 +6,7 @@ Summary:        Display memory usage of processes
 BuildArch: 	noarch
 License:        GPL-2.0-only
 URL:            https://github.com/mariosergiosl/memusage
-Source0:        %{name}-0.1.tar.xz
+Source0:        %{name}-0.2.tar.xz
 Group:          System/Management
 
 
@@ -31,5 +31,5 @@ install -Dm 0755 %{name}.py %{buildroot}%{_bindir}/%{name}
 %{_bindir}/%{name}
 
 %changelog
-* Tue Nov 14 2024 Mario Luz <mario.mssl[at]google.com> - 0.1
+* Tue Nov 14 2024 Mario Luz <mario.mssl[at]google.com> - 0.2
 - Initial package release.
