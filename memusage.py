@@ -7,7 +7,7 @@
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
- 
+
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
@@ -17,16 +17,27 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 """
-memusage - a tool to display memory usage of processes on a Linux system.
+memusage - A Swiss Army knife for comprehensive Linux process analysis.
+This tool provides deep insights into process behavior, making it invaluable for
+troubleshooting and security auditing. It details:
+- Memory usage (current and cumulative process tree).
+- Open files, including extensive disk attributes (filesystem type, mount options,
+  UUIDs, LVM, multipath, disk type, model, vendor, and persistent device aliases).
+- Network connections (local/remote addresses, status).
+- I/O activity (read/write bytes).
+- Executable forensics (MD5 hash for integrity checks).
+- Process context (full command line, security labels like AppArmor/SELinux).
+- Anomaly detection via suspicious environment variables.
+Designed for system administrators, security analysts, and DevOps engineers.
 """
 
-import psutil
-import subprocess
+import os  # Import os for environment variables access
 import re
-import os # Import os for environment variables access
-import socket # To use socket.AF_UNIX directly if psutil.AF_UNIX is missing
-import hashlib # For calculating file hashes
+import socket  # To use socket.AF_UNIX directly if psutil.AF_UNIX is missing
+import subprocess
+import hashlib  # For calculating file hashes
 
+import psutil  # psutil is a third-party library
 
 # Colors for process priority
 NICE_COLORS = {
@@ -79,16 +90,17 @@ OPEN_FILES_THRESHOLD = int(os.environ.get('OPEN_FILES_THRESHOLD', 50))
 # Common system library paths to filter out for 'Loaded Libraries'
 COMMON_LIB_PATHS = [
     '/lib/', '/usr/lib/', '/lib64/', '/usr/lib64/',
-    '/usr/local/lib/', 
-    '/snap/', 
-    '/opt/', 
-    '/var/lib/snapd/', 
-    '/usr/bin/python3', 
-    '/usr/bin/python', 
+    '/usr/local/lib/',
+    '/snap/',
+    '/opt/',
+    '/var/lib/snapd/',
+    '/usr/bin/python3',
+    '/usr/bin/python',
 ]
 
 
 # --- Functions to retrieve additional system information ---
+
 
 def _run_cmd(cmd_list):
     """Helper to run subprocess commands and return stripped stdout."""
@@ -98,36 +110,40 @@ def _run_cmd(cmd_list):
     except (subprocess.CalledProcessError, FileNotFoundError):
         return ""
 
+
 # Cache for lsblk -P output
 # This will store a dictionary for each device name
 _LSBLK_CACHE_PARSED = {}
+
 
 def _populate_lsblk_cache():
     """Populates the lsblk cache by parsing lsblk -P output.
     Uses only commonly supported columns for older lsblk versions, including MODEL/VENDOR and PARTUUID."""
     global _LSBLK_CACHE_PARSED
-    _LSBLK_CACHE_PARSED = {} # Clear previous cache
+    _LSBLK_CACHE_PARSED = {}  # Clear previous cache
 
     try:
         # Re-added PARTUUID for disk_id, and MODEL/VENDOR
         # The list of columns used here should be broadly compatible.
         lsblk_output = _run_cmd(["lsblk", "-P", "-o", "NAME,PKNAME,FSTYPE,MOUNTPOINT,UUID,PARTUUID,ROTA,TYPE,MODEL,VENDOR,MAJ:MIN"])
-        
+
         for line in lsblk_output.splitlines():
             device_info = {}
             # Parse key="value" pairs
             for match in re.finditer(r'(\w+)="([^"]*)"', line):
                 key, value = match.groups()
-                device_info[key.lower()] = value # Store keys in lowercase
-            
+                device_info[key.lower()] = value  # Store keys in lowercase
+
             if 'name' in device_info:
                 _LSBLK_CACHE_PARSED[device_info['name']] = device_info
     except Exception as e:
         # print(f"DEBUG: Error populating lsblk cache: {e}") # Debugging
-        _LSBLK_CACHE_PARSED = {} # Ensure cache is empty on error
+        _LSBLK_CACHE_PARSED = {}  # Ensure cache is empty on error
 
-_LVS_CACHE = {} # Cache for LVM Logical Volumes
-_VGS_CACHE = {} # Cache for LVM Volume Groups
+
+_LVS_CACHE = {}  # Cache for LVM Logical Volumes
+_VGS_CACHE = {}  # Cache for LVM Volume Groups
+
 
 def _populate_lvm_cache():
     """Populates caches for LVM Logical Volumes (LVs) and Volume Groups (VGs)."""
@@ -152,7 +168,7 @@ def _populate_lvm_cache():
                 vg_name, vg_size = parts[0], parts[1]
                 _VGS_CACHE[vg_name] = {'vg_size': vg_size, 'vg_free': parts[2] if len(parts) > 2 else 'N/A'}
     except Exception:
-        # print(f"DEBUG: Error populating LVM cache: {e}") # Debugging
+        # print(f"DEBUG: Error populating LVM cache: {e}")  # Debugging
         _LVS_CACHE = {}
         _VGS_CACHE = {}
 
@@ -160,6 +176,7 @@ def _populate_lvm_cache():
 def get_device_info_from_lsblk(device_name):
     """Retrieves detailed device info from lsblk cache."""
     return _LSBLK_CACHE_PARSED.get(device_name, None)
+
 
 def get_mount_info(path):
     """
@@ -172,7 +189,7 @@ def get_mount_info(path):
         # findmnt -n -o TARGET,OPTIONS <path>
         cmd = ["findmnt", "-n", "-o", "TARGET,OPTIONS", path]
         findmnt_output = _run_cmd(cmd)
-        
+
         if findmnt_output:
             parts = findmnt_output.split(maxsplit=1)
             mount_point = parts[0].strip()
@@ -191,16 +208,16 @@ def get_disk_info(path):
     """
     info = {
         'physical_disk': "N/A",
-        'disk_id': "N/A", # This will be PARTUUID
-        'disk_uuid': "N/A", # This will be filesystem UUID
-        'device_name': "N/A", # e.g., sda2, dm-0
+        'disk_id': "N/A",  # This will be PARTUUID
+        'disk_uuid': "N/A",  # This will be filesystem UUID
+        'device_name': "N/A",  # e.g., sda2, dm-0
         'fstype': "N/A",
-        'lvg_name': "N/A", # LVM Volume Group Name
-        'lvl_name': "N/A", # LVM Logical Volume Name
-        'disk_type': "N/A", # SSD or HDD
-        'model': "N/A", # Disk model
-        'vendor': "N/A", # Disk vendor
-        'aliases': "N/A", # /dev/disk/by-id/, /dev/disk/by-path/, /dev/disk/by-uuid/, /dev/disk/by-label/
+        'lvg_name': "N/A",  # LVM Volume Group Name
+        'lvl_name': "N/A",  # LVM Logical Volume Name
+        'disk_type': "N/A",  # SSD or HDD
+        'model': "N/A",  # Disk model
+        'vendor': "N/A",  # Disk vendor
+        'aliases': "N/A",  # /dev/disk/by-id/, /dev/disk/by-path/, /dev/disk/by-uuid/, /dev/disk/by-label/
     }
     if not path:
         return info
@@ -211,13 +228,13 @@ def get_disk_info(path):
     primary_device_path = ""
     if len(df_output) > 1:
         primary_device_path = df_output[1].strip()
-    
+
     # If df didn't return a device, or if the path is already a device path (e.g., /dev/dm-X, /dev/sda)
     if not primary_device_path.startswith('/dev/'):
         primary_device_path = path
 
     if not primary_device_path.startswith('/dev/'):
-        return info # Not a block device path
+        return info  # Not a block device path
 
     info['device_name'] = os.path.basename(primary_device_path)
 
@@ -228,12 +245,12 @@ def get_disk_info(path):
         # Physical Disk Name (Parent)
         if lsblk_device_info.get('pkname'):
             info['physical_disk'] = f"/dev/{lsblk_device_info['pkname']}"
-        else: # If it's a top-level device, its own name is the physical disk
-             info['physical_disk'] = f"/dev/{lsblk_device_info['name']}"
+        else:  # If it's a top-level device, its own name is the physical disk
+            info['physical_disk'] = f"/dev/{lsblk_device_info['name']}"
 
         info['fstype'] = lsblk_device_info.get('fstype', 'N/A')
         info['disk_uuid'] = lsblk_device_info.get('uuid', 'N/A')
-        info['disk_id'] = lsblk_device_info.get('partuuid', 'N/A') # Use PARTUUID for disk_id
+        info['disk_id'] = lsblk_device_info.get('partuuid', 'N/A')  # Use PARTUUID for disk_id
         info['model'] = lsblk_device_info.get('model', 'N/A')
         info['vendor'] = lsblk_device_info.get('vendor', 'N/A')
 
@@ -242,18 +259,18 @@ def get_disk_info(path):
         if lvm_info_from_cache:
             info['lvl_name'] = lvm_info_from_cache.get('lv_name', 'N/A')
             info['lvg_name'] = lvm_info_from_cache.get('vg_name', 'N/A')
-        
+
         # Disk Type (SSD/HDD) - ROTA is 0 for SSD, 1 for HDD
         rota = lsblk_device_info.get('rota')
         if rota is not None:
             info['disk_type'] = "HDD" if rota == "1" else "SSD" if rota == "0" else "N/A"
-        
+
         # Device Aliases (/dev/disk/by-id, /dev/disk/by-path, /dev/disk/by-uuid, /dev/disk/by-label)
         aliases = []
-        if primary_device_path.startswith('/dev/'): # Only try to get aliases for real devices
+        if primary_device_path.startswith('/dev/'):  # Only try to get aliases for real devices
             try:
                 # Iterate through common alias directories. Order matters for display preference.
-                for alias_dir in ['by-id', 'by-path', 'by-uuid', 'by-label']: 
+                for alias_dir in ['by-id', 'by-path', 'by-uuid', 'by-label']:
                     full_alias_dir = f"/dev/disk/{alias_dir}"
                     if os.path.exists(full_alias_dir):
                         for entry in os.listdir(full_alias_dir):
@@ -264,13 +281,14 @@ def get_disk_info(path):
                                 if symlink_target == primary_device_path:
                                     # Filter by-uuid from ALIASES if it's already shown as top-level UUID
                                     if alias_dir == 'by-uuid' and info['disk_uuid'] == entry:
-                                        continue # Skip by-uuid in aliases if UUID is already displayed explicitly
+                                        continue  # Skip by-uuid in aliases if UUID is already displayed explicitly
                                     aliases.append(f"{alias_dir}/{entry}")
             except Exception:
-                pass # Ignore errors listing /dev/disk/by-X
+                pass  # Ignore errors listing /dev/disk/by-X
         info['aliases'] = ", ".join(aliases) if aliases else "N/A"
 
     return info
+
 
 def get_multipath_detailed_info(device_path):
     """
@@ -283,10 +301,10 @@ def get_multipath_detailed_info(device_path):
     }
     if not device_path or not device_path.startswith("/dev/dm-"):
         return info
-    
+
     multipath_output = _run_cmd(["sudo", "multipath", "-ll", device_path])
     if not multipath_output:
-        return info # Command failed or device is not multipath
+        return info  # Command failed or device is not multipath
 
     # Capture the multipath alias/ID (first line, before paths)
     id_match = re.match(r'(\S+)\s+\(.*\)', multipath_output)
@@ -298,7 +316,7 @@ def get_multipath_detailed_info(device_path):
     if paths:
         formatted_paths = [f"/dev/{p[0]} ({p[1]})" for p in paths]
         info['multipath_paths'] = ", ".join(formatted_paths)
-    
+
     return info
 
 # --- End of new functions ---
@@ -353,7 +371,7 @@ def get_open_files_enhanced(process: psutil.Process) -> list:
             if file_obj.path in ["/proc/swaps", "/proc/kmsg", "/proc/mtrr", "/dev/null"] or \
                re.match(r"^/proc/\d+/mountinfo$", file_obj.path) or \
                re.match(r"^/sys/devices/virtual/tty/tty\d+/active$", file_obj.path) or \
-               re.match(r"^/proc/\d+/fd/\d+$", file_obj.path): # Generic /proc/PID/fd/NUM entries
+               re.match(r"^/proc/\d+/fd/\d+$", file_obj.path):  # Generic /proc/PID/fd/NUM entries
                 continue
             # Filter out /dev/pts/<N> (terminal devices)
             if file_obj.path.startswith("/dev/pts/"):
@@ -362,7 +380,6 @@ def get_open_files_enhanced(process: psutil.Process) -> list:
             if file_obj.path.startswith("/dev/shm/"):
                 continue
 
-
             file_info = {
                 'path': file_obj.path,
                 'fd': file_obj.fd,
@@ -370,16 +387,16 @@ def get_open_files_enhanced(process: psutil.Process) -> list:
                 'mode': file_obj.mode,
                 'flags': file_obj.flags,
             }
-            
+
             # Get Mount Point and Options
             mount_details = get_mount_info(file_obj.path)
             file_info['mount_point'] = mount_details['mount_point']
-            file_info['mount_options'] = mount_details['mount_options'] # New: Mount Options
+            file_info['mount_options'] = mount_details['mount_options']  # New: Mount Options
 
             # Add disk information (this now uses the new _LSBLK_CACHE_PARSED)
             disk_details = get_disk_info(file_obj.path)
-            file_info.update(disk_details) # Adds physical_disk, device_name, disk_uuid, fstype, lvg_name, lvl_name, disk_type, aliases
-            
+            file_info.update(disk_details)  # Adds physical_disk, device_name, disk_uuid, fstype, lvg_name, lvl_name, disk_type, aliases
+
             # Check multipath only if it's a /dev/dm-X device
             if file_info['device_name'].startswith('dm-'):
                 multipath_details = get_multipath_detailed_info(f"/dev/{file_info['device_name']}")
@@ -395,6 +412,7 @@ def get_open_files_enhanced(process: psutil.Process) -> list:
         return []
 
 # get_ipc_connections is removed as the IPC section is being removed from output for now.
+
 
 def get_connections(process: psutil.Process) -> list:
     """
@@ -425,6 +443,7 @@ def get_io_counters(process: psutil.Process):
 
 # get_process_capabilities is removed due to psutil version incompatibility.
 
+
 def get_loaded_libraries(process: psutil.Process) -> list:
     """
     Retrieves a list of loaded shared libraries (.so files) and non-system Python scripts by a process.
@@ -435,11 +454,11 @@ def get_loaded_libraries(process: psutil.Process) -> list:
         for mmap_entry in process.memory_maps(grouped=False):
             if hasattr(mmap_entry, 'path') and mmap_entry.path:
                 path = mmap_entry.path
-                
+
                 # Filter out common system library paths
                 if any(path.startswith(prefix) for prefix in COMMON_LIB_PATHS):
-                    continue # Skip common system libraries
-                
+                    continue  # Skip common system libraries
+
                 # Filter out /proc/ and /dev/ (which are pseudo-filesystems, not real libraries)
                 if path.startswith(('/proc/', '/dev/')):
                     continue
@@ -451,13 +470,14 @@ def get_loaded_libraries(process: psutil.Process) -> list:
                     # More specific filter for python source/bytecode
                     # Only include if path is not a system python path and not part of the script itself
                     if not any(path.startswith(prefix) for prefix in ['/usr/lib/python', '/usr/local/lib/python']) and \
-                       not path.endswith(('memusage_d.py', 'unix_server.py', 'unix_client.py', 'fifo_writer.py', 'fifo_reader.py', 'memusage_e.py', 'memusage_f.py')):
+                       not path.endswith(('memusage_d.py',)):
                         libraries.append(path)
-        
+
         # Use a set to remove duplicates before returning
         return list(set(libraries))
     except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
         return []
+
 
 def get_executable_hash(process: psutil.Process) -> str:
     """
@@ -468,7 +488,7 @@ def get_executable_hash(process: psutil.Process) -> str:
         exe_path = process.exe()
         if not exe_path or not os.path.exists(exe_path):
             return "N/A"
-        
+
         hasher = hashlib.md5()
         # Read the file in chunks to handle large executables
         with open(exe_path, 'rb') as f:
@@ -478,8 +498,9 @@ def get_executable_hash(process: psutil.Process) -> str:
     except (psutil.NoSuchProcess, psutil.AccessDenied, FileNotFoundError):
         return "N/A"
     except Exception as e:
-        # print(f"Error getting hash for {exe_path}: {e}") # For debugging, if needed
+        # print(f"Error getting hash for {exe_path}: {e}")  # For debugging, if needed
         return "N/A"
+
 
 def get_suspicious_env_vars(process: psutil.Process) -> dict:
     """
@@ -488,8 +509,8 @@ def get_suspicious_env_vars(process: psutil.Process) -> dict:
     susp_vars = {}
     SUSPICIOUS_ENV_KEYS = [
         'LD_PRELOAD', 'LD_LIBRARY_PATH', 'LD_AUDIT', 'LD_DEBUG',
-        'PYTHONPATH', 'PERL5LIB', 'RUBYLIB', # Language-specific library paths
-        'PATH' # If it contains suspicious entries like '.' or /tmp
+        'PYTHONPATH', 'PERL5LIB', 'RUBYLIB',  # Language-specific library paths
+        'PATH'  # If it contains suspicious entries like '.' or /tmp
     ]
     try:
         environ = process.environ()
@@ -498,13 +519,14 @@ def get_suspicious_env_vars(process: psutil.Process) -> dict:
                 # Basic check for PATH: if it contains '.' or /tmp
                 if key == 'PATH' and ('.' in value.split(os.pathsep) or '/tmp' in value.split(os.pathsep)):
                     susp_vars[key] = value
-                elif key != 'PATH': # For other suspicious vars, just list them
+                elif key != 'PATH':  # For other suspicious vars, just list them
                     susp_vars[key] = value
             # Additional check: any variable containing sensitive data or large encoded strings
             # This is more advanced and requires heuristic analysis. For now, stick to well-known ones.
         return susp_vars
     except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
         return {}
+
 
 def get_security_context(process_pid: int) -> str:
     """
@@ -516,26 +538,26 @@ def get_security_context(process_pid: int) -> str:
         # Try AppArmor first (via /proc/<pid>/attr/current)
         if os.path.exists(f"/proc/{process_pid}/attr/current"):
             apparmor_context = _run_cmd(["cat", f"/proc/{process_pid}/attr/current"])
-            if apparmor_context and apparmor_context != "kernel": # Filter out kernel default
+            if apparmor_context and apparmor_context != "kernel":  # Filter out kernel default
                 context = f"AppArmor: {apparmor_context}"
-        
+
         # If not AppArmor, try SELinux (via ps -eo pid,label)
         # Check if 'ps' supports 'label' column and SELinux is enabled
         if context == "N/A":
             # Check if 'ps' supports the 'label' column first (more robust check)
             # Using --help to check for 'label' support is more reliable than --version on some systems.
             ps_help_output = _run_cmd(["ps", "--help"])
-            if "label" in ps_help_output or "LABEL" in ps_help_output: 
+            if "label" in ps_help_output or "LABEL" in ps_help_output:
                 ps_label_output = _run_cmd(["ps", "-eo", f"pid,label", "--no-headers"])
                 for line in ps_label_output.splitlines():
                     parts = line.strip().split(maxsplit=1)
                     if len(parts) == 2 and parts[0] == str(process_pid):
                         selinux_label = parts[1].strip()
-                        if selinux_label and selinux_label != "unconfined_u:unconfined_r:unconfined_t:s0": # Filter default unconfined
+                        if selinux_label and selinux_label != "unconfined_u:unconfined_r:unconfined_t:s0":  # Filter default unconfined
                             context = f"SELinux: {selinux_label}"
                             break
     except (subprocess.CalledProcessError, FileNotFoundError):
-        pass # Ignore errors if commands not found or permission denied
+        pass  # Ignore errors if commands not found or permission denied
     return context
 
 
@@ -562,9 +584,9 @@ def show_process_tree(process: psutil.Process, level=0):
         # Original process line format
         # PID - Process Name (Memory Usage)
         print(f"{'  ' * level}{color}{process.pid} - {process.name()} ({mem_mb:.2f} MB){reset_color}")
-        
+
         # Add Command Line below the main process line
-        if cmdline != process.name(): # Only print if different from simple name
+        if cmdline != process.name():  # Only print if different from simple name
             print(f"{'  ' * (level + 1)}- CMDLINE: {cmdline}")
 
         # Executable Hash
@@ -588,52 +610,52 @@ def show_process_tree(process: psutil.Process, level=0):
                 print(f"{'  ' * (level + 2)}- {lib}")
 
         # Open files (display enhanced information) - Moved after other details for better flow
-        open_files = get_open_files_enhanced(process) # Use the ENHANCED function
+        open_files = get_open_files_enhanced(process)  # Use the ENHANCED function
         if open_files:
             # Use a set to avoid duplicate paths if a file is opened multiple times
-            seen_files = set() 
+            seen_files = set()
             for file_info in open_files:
                 if file_info['path'] in seen_files:
                     continue
                 seen_files.add(file_info['path'])
-                
+
                 extended_info = []
                 if file_info.get('mount_point') != "N/A":
                     extended_info.append(f"MOUNT:{file_info['mount_point']}")
-                if file_info.get('mount_options') != "N/A": # New: Mount Options
+                if file_info.get('mount_options') != "N/A":  # New: Mount Options
                     extended_info.append(f"MNT_OPTS:{file_info['mount_options']}")
-                if file_info.get('fstype') != "N/A": # New: Filesystem Type
+                if file_info.get('fstype') != "N/A":  # New: Filesystem Type
                     extended_info.append(f"FSTYPE:{file_info['fstype']}")
                 if file_info.get('physical_disk') != "N/A":
                     extended_info.append(f"DISK:{file_info['physical_disk']}")
                 if file_info.get('device_name') != "N/A":
                     extended_info.append(f"DEV:{file_info['device_name']}")
-                
+
                 # Display PARTUUID as ID, and Filesystem UUID
-                if file_info.get('disk_id') != "N/A": # This is PARTUUID from lsblk
-                    extended_info.append(f"ID:{file_info['disk_id']}") 
-                if file_info.get('disk_uuid') != "N/A": # This is filesystem UUID from lsblk
-                    extended_info.append(f"UUID:{file_info['disk_uuid']}") 
+                if file_info.get('disk_id') != "N/A":  # This is PARTUUID from lsblk
+                    extended_info.append(f"ID:{file_info['disk_id']}")
+                if file_info.get('disk_uuid') != "N/A":  # This is filesystem UUID from lsblk
+                    extended_info.append(f"UUID:{file_info['disk_uuid']}")
 
                 # LVM Info - only display if both VG and LV are available
-                if file_info.get('lvg_name') != "N/A" and file_info.get('lvl_name') != "N/A": 
+                if file_info.get('lvg_name') != "N/A" and file_info.get('lvl_name') != "N/A":
                     extended_info.append(f"LVM:{file_info['lvg_name']}/{file_info['lvl_name']}")
-                elif file_info.get('lvg_name') != "N/A": # Just VG if LV not available
+                elif file_info.get('lvg_name') != "N/A":  # Just VG if LV not available
                     extended_info.append(f"LVM_VG:{file_info['lvg_name']}")
-                elif file_info.get('lvl_name') != "N/A": # Just LV if VG not available
+                elif file_info.get('lvl_name') != "N/A":  # Just LV if VG not available
                     extended_info.append(f"LVM_LV:{file_info['lvl_name']}")
 
-                if file_info.get('disk_type') != "N/A": # New: Disk Type (SSD/HDD)
+                if file_info.get('disk_type') != "N/A":  # New: Disk Type (SSD/HDD)
                     extended_info.append(f"DISK_TYPE:{file_info['disk_type']}")
-                if file_info.get('model') != "N/A": # New: Disk Model
+                if file_info.get('model') != "N/A":  # New: Disk Model
                     extended_info.append(f"MODEL:{file_info['model']}")
-                if file_info.get('vendor') != "N/A": # New: Disk Vendor
+                if file_info.get('vendor') != "N/A":  # New: Disk Vendor
                     extended_info.append(f"VENDOR:{file_info['vendor']}")
                 if file_info.get('multipath_id') != "N/A":
                     extended_info.append(f"MP_ID:{file_info['multipath_id']}")
                 if file_info.get('multipath_paths') != "N/A":
                     extended_info.append(f"MP_PATHS:[{file_info['multipath_paths']}]")
-                if file_info.get('aliases') != "N/A": # New: Device Aliases, will filter by-uuid if UUID is present
+                if file_info.get('aliases') != "N/A":  # New: Device Aliases, will filter by-uuid if UUID is present
                     extended_info.append(f"ALIASES:[{file_info['aliases']}]")
 
                 extra_details_str = ""
@@ -643,7 +665,7 @@ def show_process_tree(process: psutil.Process, level=0):
                 print(f"{'  ' * (level + 1)}- {file_info.get('path', 'N/A')}{extra_details_str}")
 
         # Network connections (display summarized info)
-        connections = get_connections(process) # This only returns non-Unix connections
+        connections = get_connections(process)  # This only returns non-Unix connections
         if connections:
             for conn in connections:
                 # Indentation and titles for network info
@@ -703,7 +725,9 @@ if __name__ == '__main__':
 
     print("\n--- End of Report ---")
     print("\nNotes:")
-    print(" - Accessing some information (e.g., open files of other users, multipath, executable hash, env vars, security context) may require 'sudo' privileges.")
+    print(" - Accessing some information - ")
+    print("e.g., open files of other users, multipath, executable hash, env vars, security context")
+    print("may require 'sudo' privileges.")
     print(" - Read bytes and Write bytes values are cumulative since process start.")
     print(" - 'N/A' means information could not be obtained or is not applicable.")
     print("\n\n--- Understanding Disk Identifiers in Data Centers ---")
