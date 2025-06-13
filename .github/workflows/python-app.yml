@@ -32,7 +32,7 @@ jobs:
         pip install sphinx
         sphinx-build -b html docs/ docs/_build/
     - name: Upload documentation (opcional)
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: documentation
         path: docs/_build/
