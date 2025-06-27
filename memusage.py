@@ -385,7 +385,7 @@ def get_open_files_enhanced(process: psutil.Process) -> list:
             if file_obj.path in ["/proc/swaps", "/proc/kmsg", "/proc/mtrr", "/dev/null"] or \
                re.match(r"^/proc/\d+/mountinfo$", file_obj.path) or \
                re.match(r"^/sys/devices/virtual/tty/tty\d+/active$", file_obj.path) or \
-               re.match(r"^/proc/\d+/fd/\d+$", file_obj.path):  # Generic /proc/PID/fd/NUM entries
+               re.match(r"^/proc/\d+/fd/\d+$", file_obj.path):
                 continue
             # Filter out /dev/pts/<N> (terminal devices)
             if file_obj.path.startswith("/dev/pts/"):
@@ -500,7 +500,6 @@ def get_executable_hash(process: psutil.Process) -> str:
             return "N/A"
 
         hasher = hashlib.md5()
-        # Read the file in chunks to handle large executables
         with open(exe_path, 'rb') as f:
             for chunk in iter(lambda: f.read(4096), b''):
                 hasher.update(chunk)
@@ -519,20 +518,17 @@ def get_suspicious_env_vars(process: psutil.Process) -> dict:
     susp_vars = {}
     SUSPICIOUS_ENV_KEYS = [
         'LD_PRELOAD', 'LD_LIBRARY_PATH', 'LD_AUDIT', 'LD_DEBUG',
-        'PYTHONPATH', 'PERL5LIB', 'RUBYLIB',  # Language-specific library paths
-        'PATH'  # If it contains suspicious entries like '.' or /tmp
+        'PYTHONPATH', 'PERL5LIB', 'RUBYLIB',
+        'PATH'
     ]
     try:
         environ = process.environ()
         for key, value in environ.items():
             if key in SUSPICIOUS_ENV_KEYS:
-                # Basic check for PATH: if it contains '.' or /tmp
                 if key == 'PATH' and ('.' in value.split(os.pathsep) or '/tmp' in value.split(os.pathsep)):
                     susp_vars[key] = value
-                elif key != 'PATH':  # For other suspicious vars, just list them
+                elif key != 'PATH':
                     susp_vars[key] = value
-            # Additional check: any variable containing sensitive data or large encoded strings
-            # This is more advanced and requires heuristic analysis. For now, stick to well-known ones.
         return susp_vars
     except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
         return {}
@@ -545,17 +541,12 @@ def get_security_context(process_pid: int) -> str:
     """
     context = "N/A"
     try:
-        # Try AppArmor first (via /proc/<pid>/attr/current)
         if os.path.exists(f"/proc/{process_pid}/attr/current"):
             apparmor_context = _run_cmd(["cat", f"/proc/{process_pid}/attr/current"])
-            if apparmor_context and apparmor_context != "kernel":  # Filter out kernel default
+            if apparmor_context and apparmor_context != "kernel":
                 context = f"AppArmor: {apparmor_context}"
 
-        # If not AppArmor, try SELinux (via ps -eo pid,label)
-        # Check if 'ps' supports 'label' column and SELinux is enabled
         if context == "N/A":
-            # Check if 'ps' supports the 'label' column first (more robust check)
-            # Using --help to check for 'label' support is more reliable than --version on some systems.
             ps_help_output = _run_cmd(["ps", "--help"])
             if "label" in ps_help_output or "LABEL" in ps_help_output:
                 ps_label_output = _run_cmd(["ps", "-eo", f"pid,label", "--no-headers"])
@@ -563,11 +554,11 @@ def get_security_context(process_pid: int) -> str:
                     parts = line.strip().split(maxsplit=1)
                     if len(parts) == 2 and parts[0] == str(process_pid):
                         selinux_label = parts[1].strip()
-                        if selinux_label and selinux_label != "unconfined_u:unconfined_r:unconfined_t:s0":  # Filter default unconfined
+                        if selinux_label and selinux_label != "unconfined_u:unconfined_r:unconfined_t:s0":
                             context = f"SELinux: {selinux_label}"
                             break
     except (subprocess.CalledProcessError, FileNotFoundError):
-        pass  # Ignore errors if commands not found or permission denied
+        pass
     return context
 
 
@@ -758,9 +749,10 @@ def show_process_tree(process: psutil.Process, level=0):
 
 
 # Class to duplicate output (console and log file)
-class Tee(object):
+class Tee:
     def __init__(self, name, mode):
-        self.file = open(name, mode)
+        # W1514 (unspecified-encoding) - added encoding='utf-8'
+        self.file = open(name, mode, encoding='utf-8')
         self.stdout = sys.stdout
         sys.stdout = self
 
@@ -788,7 +780,8 @@ def convert_log_to_html(log_filepath, html_filepath):
     preserving formatting and colors.
     """
     try:
-        with open(log_filepath, 'r') as log_file:
+        # W1514 (unspecified-encoding) - added encoding='utf-8'
+        with open(log_filepath, 'r', encoding='utf-8') as log_file:
             log_content = log_file.read()
 
         # Replaces ANSI codes with HTML tags with CSS style
@@ -802,7 +795,8 @@ def convert_log_to_html(log_filepath, html_filepath):
         # Add any missing closing spans if tags are left unclosed due to content ending
         open_spans_count = log_content.count('<span')
         close_spans_count = log_content.count('</span>')
-        log_content += '</span>' * (open_spans_count - close_spans_count)
+        if open_spans_count > close_spans_count:
+            log_content += '</span>' * (open_spans_count - close_spans_count)
 
         # HTML needs a basic header and body
         html_template = f"""<!DOCTYPE html>
@@ -828,7 +822,8 @@ def convert_log_to_html(log_filepath, html_filepath):
 </body>
 </html>
 """
-        with open(html_filepath, 'w') as html_file:
+        # W1514 (unspecified-encoding) - added encoding='utf-8'
+        with open(html_filepath, 'w', encoding='utf-8') as html_file:
             html_file.write(html_template)
 
         print(f"\n--- HTML report generated at: {html_filepath} ---")
