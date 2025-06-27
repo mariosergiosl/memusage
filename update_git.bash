@@ -7,9 +7,8 @@
 #
 # DESCRIPTION: This script updates a Git repository with the latest changes.
 #              If a commit message is provided as an argument, it uses that.
-#              Otherwise, it shows the list of changed files and prompts
-#              the user for a commit message (optional). If no message is
-#              entered, it uses a default message with the files list.
+#              Otherwise, it automatically uses a default message with the
+#              list of changed files.
 #              This script only runs if the 'run_python_test.bash' script
 #              is successful.
 #
@@ -28,13 +27,13 @@
 #
 # COMPANY:
 #
-# VERSION: 1.4  # Updated version
+# VERSION: 1.5  # Updated version
 # CREATED: 2024-11-18 17:00:00
-# REVISION: 2025-06-27 11:05:00 # Updated revision date
+# REVISION: 2025-06-27 11:22:00 # Updated revision date
 #===============================================================================
 
 # Set script version
-SCRIPT_VERSION="1.4"
+SCRIPT_VERSION="1.5"
 
 # Display help message
 show_help() {
@@ -110,18 +109,9 @@ if [[ $? -eq 0 ]]; then
   # Get the list of updated files (now including newly added files)
   updated_files=$(git diff --cached --name-only)
 
-  # Display the list of updated files and prompt for a commit message
-  echo "Updating the following files:"
-  echo "$updated_files"
-  # Check if commit_message was provided via argument, otherwise prompt
+  # Use the default commit message if none is provided via argument
   if [[ -z "$commit_message" ]]; then
-    read -r -p "Press Enter to use the default commit message or type a custom message: " custom_message_input
-    # Use the input from prompt or default
-    if [[ -z "$custom_message_input" ]]; then
-      commit_message="Updating files: $updated_files"
-    else
-      commit_message="$custom_message_input"
-    fi
+    commit_message="Updating files: $updated_files"
   fi
 
   echo "Committing with message: '$commit_message'"
