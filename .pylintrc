@@ -1,33 +1,88 @@
 [MASTER]
-
-# A good starting point for disabling messages.
-# You can adjust these as needed.
-# W0603: Using the global statement (often acceptable for module-level caches in scripts)
-# W0718: Catching too general exception Exception (we are aware and handle specific cases or ignore where safe)
-# W0612: Unused variable 'e' (often when 'e' is caught for debugging but not always printed)
-# R1702: Too many nested blocks (often a symptom of complex parsing/display logic in scripts)
-# C0301: Line too long (managed by max-line-length in FORMAT or acceptable for very long lines)
-# C0103: Invalid name (for specific cases, default is UPPER_CASE for constants)
-# C0114: Missing module docstring
-# C0116: Missing function docstring
-# C0115: Missing class docstring
-# W0621: Redefining name from outer scope (common in loops or try/excepts where name is reused)
+# This block lists Pylint messages that are explicitly disabled for this project.
+# Each disabled message is documented with a brief explanation of why it's ignored.
 disable=
+    # R1732: Consider using 'with' for resource-allocating operations
+    # Disabled for the 'Tee' class, which manages stdout redirection.
+    # The resource (file handle) is intentionally kept open for the duration of the script,
+    # with proper closing handled in a 'finally' block in __main__.
     R1732,
+
+    # R0914: Too many local variables (e.g., in show_process_tree)
+    # Disabled because the main display function consolidates many data points
+    # for a comprehensive overview of a single process, making a high variable count acceptable
+    # for readability in this specific context, without fragmenting the display logic.
     R0914,
+
+    # R0912: Too many branches (e.g., in show_process_tree)
+    # Disabled due to the extensive conditional logic required to retrieve and display
+    # various optional process details (e.g., disk info, connection status, security context)
+    # which leads to a higher-than-default number of branches for comprehensive reporting.
     R0912,
+
+    # R0915: Too many statements (e.g., in show_process_tree)
+    # Disabled as the 'show_process_tree' function is designed to be a monolithic display
+    # engine for all process-related information, resulting in a higher statement count
+    # to maintain a single, coherent output flow for each process and its children.
     R0915,
+
+    # W0603: Using the global statement
+    # Disabled as 'global' might be used for module-level caches or specific configuration
+    # patterns within the script where its use is intentional and controlled.
     W0603,
+
+    # W0718: Catching too general exception Exception (broad-except)
+    # Disabled for utility functions where a broad exception catch is used to ensure
+    # robustness against various potential runtime errors (e.g., permission denied,
+    # process vanished) when querying system data, with appropriate fallback ('N/A').
     W0718,
+
+    # W0612: Unused variable 'e'
+    # Disabled when exception variables are caught for debugging purposes or logging,
+    # but not always explicitly used in the exception handler itself.
     W0612,
+
+    # R1702: Too many nested blocks
+    # Disabled due to the hierarchical nature of process display and data retrieval,
+    # which naturally leads to nested conditional and loop structures.
     R1702,
-    C0301, # Let's disable this here as a catch-all for long lines, or use max-line-length in [FORMAT]
-    C0103, # We'll manage invalid-name explicitly if needed
+
+    # C0301: Line too long
+    # Disabled to allow for more descriptive variable names, comprehensive print statements,
+    # and long URLs/paths without enforcing strict line length that might hinder readability
+    # or require excessive line breaks in certain contexts. (Managed by max-line-length in [FORMAT]).
+    C0301,
+
+    # C0103: Invalid name (e.g., for non-snake_case variables like PID, ID, LVM abbreviations)
+    # Disabled to allow for specific naming conventions for variables or constants
+    # that are common in system contexts (e.g., PID, UUID) or external tool outputs.
+    C0103,
+
+    # C0114: Missing module docstring
+    # Disabled if the module's purpose is clearly stated in its header comments
+    # or if the project structure prioritizes inline comments over module-level docstrings
+    # for conciseness in small scripts. (Note: A module docstring IS present at the top).
     C0114,
+
+    # C0115: Missing class docstring
+    # Disabled to allow for a more concise coding style for simple utility classes
+    # where the class name and method names might be self-explanatory.
     C0115,
+
+    # C0116: Missing function docstring
+    # Disabled to allow for a more concise coding style for simple helper functions
+    # where the function name and parameters might be self-explanatory.
     C0116,
+
+    # W0621: Redefining name from outer scope
+    # Disabled when variable names are intentionally reused within loops or different
+    # try/except blocks, for clarity or resource efficiency, where the scope is clear.
     W0621,
-    f-string-without-interpolation # Keep if you don't want to enforce f-string interpolation always
+
+    # f-string-without-interpolation (a specific Pylint check)
+    # Disabled when f-strings are used for literal strings that do not contain
+    # interpolation expressions, as a stylistic choice.
+    f-string-without-interpolation
 
 extension-pkg-whitelist=psutil
 ignore=logs
