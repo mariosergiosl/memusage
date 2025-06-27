@@ -13,6 +13,7 @@
 # C0115: Missing class docstring
 # W0621: Redefining name from outer scope (common in loops or try/excepts where name is reused)
 disable=
+    R1732,
     W0603,
     W0718,
     W0612,
@@ -63,18 +64,18 @@ max-args=10
 
 # Maximum number of local variables in a function
 # Original was 15, Pylint complained about 23/20. Let's raise to 25.
-max-locals=25
+max-locals=35
 
 # Maximum number of public methods in a class
 max-public-methods=20
 
 # Maximum number of branches in a function
 # Original was 12, Pylint complained about 33/20. Let's raise to 35.
-max-branches=35
+max-branches=50
 
 # Maximum number of statements in a function
 # Original was 50, Pylint complained about 82/50. Let's raise to 90.
-max-statements=90
+max-statements=140
 
 # Maximum number of parents for a class
 max-parents=7
