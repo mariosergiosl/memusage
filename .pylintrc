@@ -26,6 +26,7 @@ disable=
     f-string-without-interpolation # Keep if you don't want to enforce f-string interpolation always
 
 extension-pkg-whitelist=psutil
+ignore=logs
 
 [MESSAGES CONTROL]
 
