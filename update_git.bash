@@ -7,15 +7,15 @@
 #
 # DESCRIPTION: This script updates a Git repository with the latest changes.
 #              If a commit message is provided as an argument, it uses that.
-#              Otherwise, it shows the list of changed files and prompts 
-#              the user for a commit message (optional). If no message is 
+#              Otherwise, it shows the list of changed files and prompts
+#              the user for a commit message (optional). If no message is
 #              entered, it uses a default message with the files list.
-#              This script only runs if the 'run_python_test.bash' script 
+#              This script only runs if the 'run_python_test.bash' script
 #              is successful.
 #
 # OPTIONS:
-#    -h, --help       Display this help message
-#    -v, --version    Display script version
+#    -h, --help      Display this help message
+#    -v, --version   Display script version
 #
 # REQUIREMENTS: git, run_python_test.bash
 #
@@ -24,17 +24,17 @@
 # NOTES:
 #
 # AUTHOR:
-#   Mario Luz (ml), mario.mssl[at]gmail.com
+#    Mario Luz (ml), mario.mssl[at]gmail.com
 #
 # COMPANY:
 #
-# VERSION: 1.3
+# VERSION: 1.4  # Updated version
 # CREATED: 2024-11-18 17:00:00
-# REVISION: 2024-11-21 20:00:00
+# REVISION: 2025-06-27 11:05:00 # Updated revision date
 #===============================================================================
 
 # Set script version
-SCRIPT_VERSION="1.3"
+SCRIPT_VERSION="1.4"
 
 # Display help message
 show_help() {
@@ -44,13 +44,13 @@ Usage: $0 [OPTIONS] [commit message]
 This script updates a Git repository with the latest changes.
 
 OPTIONS:
-  -h, --help       Display this help message
-  -v, --version    Display script version
+  -h, --help      Display this help message
+  -v, --version   Display script version
 
 Examples:
   $0 "My commit message"
   $0 -m "My commit message"
-  $0 
+  $0
 EOF
 }
 
@@ -60,6 +60,7 @@ show_version() {
 }
 
 # Get the commit message from the command line argument or prompt for one
+commit_message=""
 while [[ $# -gt 0 ]]; do
   case "$1" in
     -h|--help)
@@ -71,7 +72,10 @@ while [[ $# -gt 0 ]]; do
       exit 0
       ;;
     *)
-      commit_message="$1"
+      # This handles the commit message if it's the first non-option argument
+      if [[ -z "$commit_message" ]]; then
+        commit_message="$1"
+      fi
       shift
       ;;
   esac
@@ -85,39 +89,66 @@ echo "Running Python tests..."
 if [[ $? -eq 0 ]]; then
   echo "Python tests passed."
 
-  # Check if there are uncommitted changes
-  if ! git diff-index --quiet HEAD --; then
-    # Add all changes to the staging area
-    git add .
+  # Always add all changes, including new untracked files, to the staging area
+  echo "Adding all changes (including new files) to staging area..."
+  git add .
 
-    # Get the list of updated files
-    updated_files=$(git diff --cached --name-only)
-
-    # Display the list of updated files and prompt for a commit message
-    echo "Updating the following files:"
-    echo "$updated_files"
-    echo "Press Enter to use the default commit message or type a custom message:"
-    #read -r -p "Commit message: " commit_message
-
-    # Use the default commit message if none is provided
-    if [[ -z "$commit_message" ]]; then
-      commit_message="Updating files: $updated_files"
-    fi
-
-    # Commit the changes with the updated files list as the comment
-    git commit -m "$commit_message"
-
-    # Pull the latest changes from the remote repository
+  # Check if there are any staged changes to commit
+  if git diff --cached --quiet --exit-code; then
+    echo "No changes to commit."
+    # Even if no changes to commit, still pull and push for tags in case
+    # there are remote updates or only tags need pushing.
+    echo "Pulling latest changes from remote repository..."
     git pull origin main
 
-    # Push the changes to the remote repository
+    echo "Pushing (possibly just tags) to remote repository..."
     git push origin main
-
-    # Push the tags to the remote repository
     git push origin --tags
-else
-    echo "No changes to commit."
+    exit 0
   fi
+
+  # Get the list of updated files (now including newly added files)
+  updated_files=$(git diff --cached --name-only)
+
+  # Display the list of updated files and prompt for a commit message
+  echo "Updating the following files:"
+  echo "$updated_files"
+  # Check if commit_message was provided via argument, otherwise prompt
+  if [[ -z "$commit_message" ]]; then
+    read -r -p "Press Enter to use the default commit message or type a custom message: " custom_message_input
+    # Use the input from prompt or default
+    if [[ -z "$custom_message_input" ]]; then
+      commit_message="Updating files: $updated_files"
+    else
+      commit_message="$custom_message_input"
+    fi
+  fi
+
+  echo "Committing with message: '$commit_message'"
+  # Commit the changes
+  git commit -m "$commit_message"
+
+  # Pull the latest changes from the remote repository BEFORE pushing local commits
+  # This helps avoid conflicts if others have pushed
+  echo "Pulling latest changes from remote repository..."
+  git pull origin main
+
+  # Check for merge conflicts after pulling
+  if [[ $(git status --porcelain | grep "^UU" | wc -l) -gt 0 ]]; then
+      echo "!!! Merge conflicts detected after pulling. Please resolve them manually !!!"
+      echo "Aborting push. Run 'git status' to see conflicted files."
+      exit 1
+  fi
+
+  # Push the changes to the remote repository
+  echo "Pushing changes to remote repository..."
+  git push origin main
+
+  # Push the tags to the remote repository
+  echo "Pushing tags to remote repository..."
+  git push origin --tags
+
 else
   echo "Python tests failed. Aborting Git update."
+  exit 1 # Exit with an error code
 fi
