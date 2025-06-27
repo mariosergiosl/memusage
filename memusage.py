@@ -31,14 +31,15 @@ troubleshooting and security auditing. It details:
 Designed for system administrators, security analysts, and DevOps engineers.
 """
 
-import os  # Import os for environment variables access
+import os
 import re
-import socket  # To use socket.AF_UNIX directly if psutil.AF_UNIX is missing
+import socket
 import subprocess
-import hashlib  # For calculating file hashes
+import hashlib
 import sys
+import datetime
 
-import psutil  # psutil is a third-party library
+import psutil
 
 # Colors for process priority
 NICE_COLORS = {
@@ -53,36 +54,50 @@ NICE_COLORS = {
     -12: "\033[93m",  # Yellow
     -11: "\033[93m",  # Yellow
     -10: "\033[93m",  # Yellow
-    -9: "\033[93m",   # Yellow
-    -8: "\033[92m",   # Green
-    -7: "\033[92m",   # Green
-    -6: "\033[92m",   # Green
-    -5: "\033[92m",   # Green
-    -4: "\033[92m",   # Green
-    -3: "\033[92m",   # Green
-    -2: "\033[92m",   # Green
-    -1: "\033[92m",   # Green
-    0: "\033[92m",    # Green
-    1: "\033[92m",    # Green
-    2: "\033[92m",    # Green
-    3: "\033[92m",    # Green
-    4: "\033[92m",    # Green
-    5: "\033[92m",    # Green
-    6: "\033[94m",    # Blue
-    7: "\033[94m",    # Blue
-    8: "\033[94m",    # Blue
-    9: "\033[94m",    # Blue
-    10: "\033[94m",   # Blue
-    11: "\033[94m",   # Blue
-    12: "\033[94m",   # Blue
-    13: "\033[94m",   # Blue
-    14: "\033[94m",   # Blue
-    15: "\033[94m",   # Blue
-    16: "\033[90m",   # Grey
-    17: "\033[90m",   # Grey
-    18: "\033[90m",   # Grey
-    19: "\033[90m",   # Grey
+    -9: "\033[93m",    # Yellow
+    -8: "\033[92m",    # Green
+    -7: "\033[92m",    # Green
+    -6: "\033[92m",    # Green
+    -5: "\033[92m",    # Green
+    -4: "\033[92m",    # Green
+    -3: "\033[92m",    # Green
+    -2: "\033[92m",    # Green
+    -1: "\033[92m",    # Green
+    0: "\033[92m",     # Green
+    1: "\033[92m",     # Green
+    2: "\033[92m",     # Green
+    3: "\033[92m",     # Green
+    4: "\033[92m",     # Green
+    5: "\033[92m",     # Green
+    6: "\033[94m",     # Blue
+    7: "\033[94m",     # Blue
+    8: "\033[94m",     # Blue
+    9: "\033[94m",     # Blue
+    10: "\033[94m",    # Blue
+    11: "\033[94m",    # Blue
+    12: "\033[94m",    # Blue
+    13: "\033[94m",    # Blue
+    14: "\033[94m",    # Blue
+    15: "\033[94m",    # Blue
+    16: "\033[90m",    # Grey
+    17: "\033[90m",    # Grey
+    18: "\033[90m",    # Grey
+    19: "\033[90m",    # Grey
 }
+
+# Define ANSI colors for script use
+RED_COLOR = "\033[91m"
+RESET_COLOR = "\033[0m"
+# Mapping for HTML conversion
+ANSI_COLOR_MAP = {
+    "\033[91m": '<span style="color: red;">',
+    "\033[93m": '<span style="color: yellow;">',
+    "\033[92m": '<span style="color: limegreen;">',
+    "\033[94m": '<span style="color: dodgerblue;">',
+    "\033[90m": '<span style="color: grey;">',
+    "\033[0m": '</span>',
+}
+
 
 # Define memory and open_files thresholds from environment if available
 MEMORY_THRESHOLD_MB = int(os.environ.get('MEMORY_THRESHOLD_MB', 200))
@@ -320,8 +335,6 @@ def get_multipath_detailed_info(device_path):
 
     return info
 
-# --- End of new functions ---
-
 
 def get_total_memory() -> float:
     """Returns the total system memory in MB."""
@@ -392,11 +405,11 @@ def get_open_files_enhanced(process: psutil.Process) -> list:
             # Get Mount Point and Options
             mount_details = get_mount_info(file_obj.path)
             file_info['mount_point'] = mount_details['mount_point']
-            file_info['mount_options'] = mount_details['mount_options']  # New: Mount Options
+            file_info['mount_options'] = mount_details['mount_options']
 
             # Add disk information (this now uses the new _LSBLK_CACHE_PARSED)
             disk_details = get_disk_info(file_obj.path)
-            file_info.update(disk_details)  # Adds physical_disk, device_name, disk_uuid, fstype, lvg_name, lvl_name, disk_type, aliases
+            file_info.update(disk_details)
 
             # Check multipath only if it's a /dev/dm-X device
             if file_info['device_name'].startswith('dm-'):
@@ -411,8 +424,6 @@ def get_open_files_enhanced(process: psutil.Process) -> list:
         return files
     except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
         return []
-
-# get_ipc_connections is removed as the IPC section is being removed from output for now.
 
 
 def get_connections(process: psutil.Process) -> list:
@@ -442,8 +453,6 @@ def get_io_counters(process: psutil.Process):
     except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
         return None
 
-# get_process_capabilities is removed due to psutil version incompatibility.
-
 
 def get_loaded_libraries(process: psutil.Process) -> list:
     """
@@ -458,7 +467,7 @@ def get_loaded_libraries(process: psutil.Process) -> list:
 
                 # Filter out common system library paths
                 if any(path.startswith(prefix) for prefix in COMMON_LIB_PATHS):
-                    continue  # Skip common system libraries
+                    continue
 
                 # Filter out /proc/ and /dev/ (which are pseudo-filesystems, not real libraries)
                 if path.startswith(('/proc/', '/dev/')):
@@ -565,55 +574,93 @@ def get_security_context(process_pid: int) -> str:
 def show_process_tree(process: psutil.Process, level=0):
     """Displays the process tree with memory usage, open files,
        network connections, and I/O counters, including enhanced file info,
-       loaded libraries, executable hash, suspicious environment variables, and security context.
+       loaded libraries, executable hash, suspicious environment variables,
+       security context, user info, and sudo indicator.
     """
     try:
         nice_value = process.nice()
-        color = NICE_COLORS.get(nice_value, "\033[0m")
-        reset_color = "\033[0m"
+        color = NICE_COLORS.get(nice_value, RESET_COLOR)
 
         # Memory usage for current process
         mem_mb = process.memory_info().rss / (1024 * 1024)
 
-        # Get Command Line, Loaded Libraries, Executable Hash, Suspicious Env Vars, Security Context
+        # Get Command Line
         cmdline = " ".join(process.cmdline()) if process.cmdline() else process.name()
-        loaded_libraries = get_loaded_libraries(process)
-        executable_hash = get_executable_hash(process)
-        suspicious_env_vars = get_suspicious_env_vars(process)
-        security_context = get_security_context(process.pid)
 
-        # Original process line format
-        # PID - Process Name (Memory Usage)
-        print(f"{'  ' * level}{color}{process.pid} - {process.name()} ({mem_mb:.2f} MB){reset_color}")
+        # --- NEW INFORMATION and Consistency ---
+        username = process.username()
 
-        # Add Command Line below the main process line
-        if cmdline != process.name():  # Only print if different from simple name
-            print(f"{'  ' * (level + 1)}- CMDLINE: {cmdline}")
+        # Check for sudo (heuristic)
+        sudo_status_str = "N/A"
+        try:
+            p_uids = process.uids()
+            if p_uids.effective == 0 and p_uids.real != 0:
+                parent_process = process.parent()
+                if parent_process and (parent_process.name() == 'sudo' or 'sudo' in " ".join(parent_process.cmdline())):
+                    sudo_status_str = f"{RED_COLOR}Yes (elevated privileges){RESET_COLOR}"
+                else:
+                    sudo_status_str = "No (setuid/other elevation)"
+            elif p_uids.effective == 0 and p_uids.real == 0:
+                sudo_status_str = "No (direct root)"
+            else:
+                sudo_status_str = "No"
+        except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
+            sudo_status_str = "N/A (permission denied)"
+
+        # Get relevant SSH environment variables
+        ssh_origin_str = "N/A"
+        try:
+            environ = process.environ()
+            if 'SSH_CONNECTION' in environ:
+                ssh_conn_parts = environ['SSH_CONNECTION'].split()
+                if len(ssh_conn_parts) >= 2:
+                    ssh_origin_str = f"{ssh_conn_parts[0]}:{ssh_conn_parts[1]}"
+            elif 'WHOAMI_SSH' in environ:
+                whoami_ssh_parts = environ['WHOAMI_SSH'].split('@')
+                if len(whoami_ssh_parts) > 1:
+                    ssh_origin_str = whoami_ssh_parts[-1]
+        except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
+            ssh_origin_str = "N/A (permission denied)"
 
         # Executable Hash
-        if executable_hash != "N/A":
-            print(f"{'  ' * (level + 1)}- Executable MD5: {executable_hash}")
+        executable_hash = get_executable_hash(process)
 
         # Security Context
-        if security_context != "N/A":
-            print(f"{'  ' * (level + 1)}- Security Context: {security_context}")
+        security_context = get_security_context(process.pid)
+
+        # Main process line format
+        print(f"{'  ' * level}{color}{process.pid} - {process.name()} ({mem_mb:.2f} MB){RESET_COLOR}")
+
+        # --- Always present lines for consistency ---
+        print(f"{'  ' * (level + 1)}- User: {username}")
+        print(f"{'  ' * (level + 1)}- Sudo Used: {sudo_status_str}")
+        print(f"{'  ' * (level + 1)}- SSH Origin: {ssh_origin_str}")
+        print(f"{'  ' * (level + 1)}- CMDLINE: {cmdline}")
+        print(f"{'  ' * (level + 1)}- Executable MD5: {executable_hash}")
+        print(f"{'  ' * (level + 1)}- Security Context: {security_context}")
 
         # Suspicious Environment Variables
+        suspicious_env_vars = get_suspicious_env_vars(process)
         if suspicious_env_vars:
             print(f"{'  ' * (level + 1)}- Suspicious Env Vars:")
             for key, value in suspicious_env_vars.items():
                 print(f"{'  ' * (level + 2)}- {key}={value}")
+        else:
+            print(f"{'  ' * (level + 1)}- Suspicious Env Vars: N/A")
 
         # Loaded Libraries
+        loaded_libraries = get_loaded_libraries(process)
         if loaded_libraries:
             print(f"{'  ' * (level + 1)}- Loaded Libraries (Non-System):")
             for lib in loaded_libraries:
                 print(f"{'  ' * (level + 2)}- {lib}")
+        else:
+            print(f"{'  ' * (level + 1)}- Loaded Libraries (Non-System): N/A")
 
-        # Open files (display enhanced information) - Moved after other details for better flow
-        open_files = get_open_files_enhanced(process)  # Use the ENHANCED function
+        # Open files (display enhanced information)
+        open_files = get_open_files_enhanced(process)
         if open_files:
-            # Use a set to avoid duplicate paths if a file is opened multiple times
+            print(f"{'  ' * (level + 1)}- Open Files:")
             seen_files = set()
             for file_info in open_files:
                 if file_info['path'] in seen_files:
@@ -623,133 +670,268 @@ def show_process_tree(process: psutil.Process, level=0):
                 extended_info = []
                 if file_info.get('mount_point') != "N/A":
                     extended_info.append(f"MOUNT:{file_info['mount_point']}")
-                if file_info.get('mount_options') != "N/A":  # New: Mount Options
+                if file_info.get('mount_options') != "N/A":
                     extended_info.append(f"MNT_OPTS:{file_info['mount_options']}")
-                if file_info.get('fstype') != "N/A":  # New: Filesystem Type
+                if file_info.get('fstype') != "N/A":
                     extended_info.append(f"FSTYPE:{file_info['fstype']}")
                 if file_info.get('physical_disk') != "N/A":
                     extended_info.append(f"DISK:{file_info['physical_disk']}")
                 if file_info.get('device_name') != "N/A":
                     extended_info.append(f"DEV:{file_info['device_name']}")
 
-                # Display PARTUUID as ID, and Filesystem UUID
-                if file_info.get('disk_id') != "N/A":  # This is PARTUUID from lsblk
+                if file_info.get('disk_id') != "N/A":
                     extended_info.append(f"ID:{file_info['disk_id']}")
-                if file_info.get('disk_uuid') != "N/A":  # This is filesystem UUID from lsblk
+                if file_info.get('disk_uuid') != "N/A":
                     extended_info.append(f"UUID:{file_info['disk_uuid']}")
 
-                # LVM Info - only display if both VG and LV are available
                 if file_info.get('lvg_name') != "N/A" and file_info.get('lvl_name') != "N/A":
                     extended_info.append(f"LVM:{file_info['lvg_name']}/{file_info['lvl_name']}")
-                elif file_info.get('lvg_name') != "N/A":  # Just VG if LV not available
+                elif file_info.get('lvg_name') != "N/A":
                     extended_info.append(f"LVM_VG:{file_info['lvg_name']}")
-                elif file_info.get('lvl_name') != "N/A":  # Just LV if VG not available
+                elif file_info.get('lvl_name') != "N/A":
                     extended_info.append(f"LVM_LV:{file_info['lvl_name']}")
 
-                if file_info.get('disk_type') != "N/A":  # New: Disk Type (SSD/HDD)
+                if file_info.get('disk_type') != "N/A":
                     extended_info.append(f"DISK_TYPE:{file_info['disk_type']}")
-                if file_info.get('model') != "N/A":  # New: Disk Model
+                if file_info.get('model') != "N/A":
                     extended_info.append(f"MODEL:{file_info['model']}")
-                if file_info.get('vendor') != "N/A":  # New: Disk Vendor
+                if file_info.get('vendor') != "N/A":
                     extended_info.append(f"VENDOR:{file_info['vendor']}")
                 if file_info.get('multipath_id') != "N/A":
                     extended_info.append(f"MP_ID:{file_info['multipath_id']}")
                 if file_info.get('multipath_paths') != "N/A":
                     extended_info.append(f"MP_PATHS:[{file_info['multipath_paths']}]")
-                if file_info.get('aliases') != "N/A":  # New: Device Aliases, will filter by-uuid if UUID is present
+                if file_info.get('aliases') != "N/A":
                     extended_info.append(f"ALIASES:[{file_info['aliases']}]")
 
                 extra_details_str = ""
                 if extended_info:
                     extra_details_str = f" ({' '.join(extended_info)})"
 
-                print(f"{'  ' * (level + 1)}- {file_info.get('path', 'N/A')}{extra_details_str}")
+                print(f"{'  ' * (level + 2)}- {file_info.get('path', 'N/A')}{extra_details_str}")
+        else:
+            print(f"{'  ' * (level + 1)}- Open Files: N/A")
 
         # Network connections (display summarized info)
-        connections = get_connections(process)  # This only returns non-Unix connections
+        connections = get_connections(process)
         if connections:
+            print(f"{'  ' * (level + 1)}- Network Connections:")
             for conn in connections:
-                # Indentation and titles for network info
-                print(f"{'  ' * (level + 1)}  - Local Address: {conn.laddr}")
-                print(f"{'  ' * (level + 1)}  - Remote Address: {conn.raddr}")
-                print(f"{'  ' * (level + 1)}  - Status: {conn.status}")
-                # Display sent/received bytes only for established connections
+                local_addr_str = f"{conn.laddr.ip}:{conn.laddr.port}" if conn.laddr else "N/A"
+                remote_addr_str = f"{conn.raddr.ip}:{conn.raddr.port}" if conn.raddr else "N/A"
+
+                print(f"{'  ' * (level + 2)}- Local: {local_addr_str} <-> Remote: {remote_addr_str} (Status: {conn.status})")
+
                 if conn.status == 'ESTABLISHED' and hasattr(conn, 'bytes_sent') and hasattr(conn, 'bytes_recv'):
-                    print(f"{'  ' * (level + 2)}- Sent bytes: {conn.bytes_sent}")
-                    print(f"{'  ' * (level + 2)}- Received bytes: {conn.bytes_recv}")
+                    print(f"{'  ' * (level + 3)}- Sent bytes: {conn.bytes_sent}")
+                    print(f"{'  ' * (level + 3)}- Received bytes: {conn.bytes_recv}")
+        else:
+            print(f"{'  ' * (level + 1)}- Network Connections: N/A")
 
         # I/O counters
         io_counters = get_io_counters(process)
         if io_counters:
             print(f"{'  ' * (level + 1)}- Read bytes: {io_counters.read_bytes}")
             print(f"{'  ' * (level + 1)}- Write bytes: {io_counters.write_bytes}")
+        else:
+            print(f"{'  ' * (level + 1)}- I/O Counters: N/A")
 
         # Children processes
         for child in process.children():
             show_process_tree(child, level + 1)
 
     except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
-        print(f"{'  ' * level}Error accessing process {process.pid}")
+        # For inaccessible processes, still show PID and an error note,
+        # and sub-information can be "N/A"
+        print(f"{'  ' * level}{color}{process.pid} - {process.name()} (Error: Access Denied/Process Vanished){RESET_COLOR}")
+        print(f"{'  ' * (level + 1)}- User: N/A")
+        print(f"{'  ' * (level + 1)}- Sudo Used: N/A")
+        print(f"{'  ' * (level + 1)}- SSH Origin: N/A")
+        print(f"{'  ' * (level + 1)}- CMDLINE: N/A")
+        print(f"{'  ' * (level + 1)}- Executable MD5: N/A")
+        print(f"{'  ' * (level + 1)}- Security Context: N/A")
+        print(f"{'  ' * (level + 1)}- Suspicious Env Vars: N/A")
+        print(f"{'  ' * (level + 1)}- Loaded Libraries (Non-System): N/A")
+        print(f"{'  ' * (level + 1)}- Open Files: N/A")
+        print(f"{'  ' * (level + 1)}- Network Connections: N/A")
+        print(f"{'  ' * (level + 1)}- I/O Counters: N/A")
+
+
+# Class to duplicate output (console and log file)
+class Tee(object):
+    def __init__(self, name, mode):
+        self.file = open(name, mode)
+        self.stdout = sys.stdout
+        sys.stdout = self
+
+    def write(self, data):
+        self.file.write(data)
+        self.stdout.write(data)
+
+    def flush(self):
+        self.file.flush()
+        self.stdout.flush()
+
+    def close(self):
+        if self.stdout is not None:
+            sys.stdout = self.stdout
+            self.stdout = None
+        if self.file is not None:
+            self.file.close()
+            self.file = None
+
+
+# Function to convert the log file to HTML
+def convert_log_to_html(log_filepath, html_filepath):
+    """
+    Converts a plain text log file (with ANSI colors) into an HTML file,
+    preserving formatting and colors.
+    """
+    try:
+        with open(log_filepath, 'r') as log_file:
+            log_content = log_file.read()
+
+        # Replaces ANSI codes with HTML tags with CSS style
+        # It's important to replace RESET_COLOR with </span> to close opened tags.
+        for ansi_code, html_tag in ANSI_COLOR_MAP.items():
+            log_content = log_content.replace(ansi_code, html_tag)
+
+        # Ensures all opened span tags are closed at the end of the content
+        # This is a simple heuristic; complex nested ANSI might require a more robust parser.
+        log_content = log_content.replace(RESET_COLOR, '</span>')
+        # Add any missing closing spans if tags are left unclosed due to content ending
+        open_spans_count = log_content.count('<span')
+        close_spans_count = log_content.count('</span>')
+        log_content += '</span>' * (open_spans_count - close_spans_count)
+
+        # HTML needs a basic header and body
+        html_template = f"""<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Memusage Report</title>
+    <style>
+        body {{ background-color: #1e1e1e; color: #d4d4d4; font-family: 'Cascadia Code', 'Consolas', monospace; font-size: 14px; line-height: 1.4; }}
+        pre {{ white-space: pre-wrap; word-wrap: break-word; }}
+        /* Styles for mapped colors */
+        span[style*="color: red;"] {{ color: red; }}
+        span[style*="color: yellow;"] {{ color: yellow; }}
+        span[style*="color: green;"] {{ color: limegreen; }}
+        span[style*="color: dodgerblue;"] {{ color: dodgerblue; }}
+        span[style*="color: grey;"] {{ color: grey; }}
+    </style>
+</head>
+<body>
+    <pre><code>
+{log_content}
+    </code></pre>
+</body>
+</html>
+"""
+        with open(html_filepath, 'w') as html_file:
+            html_file.write(html_template)
+
+        print(f"\n--- HTML report generated at: {html_filepath} ---")
+
+    except FileNotFoundError:
+        print(f"Error: Log file not found at {log_filepath}")
+    except Exception as e:
+        print(f"Error converting log to HTML: {e}")
 
 
 if __name__ == '__main__':
-    print("--- Memory and Resource Usage Report ---")
-    print(f"Memory Threshold (MB): {MEMORY_THRESHOLD_MB}")
-    print(f"Open Files Threshold: {OPEN_FILES_THRESHOLD}")
-    print("---------------------------------------------")
+    # Generate timestamp for the log file name in international standard
+    # Ex: memusage-2025-06-27_13-30-00.log
+    timestamp = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+    log_filename = f"memusage-{timestamp}.log"
+    log_dir = "logs"
 
-    # Print Priority Color Table
-    print("\nPriority Color Table:")
-    for nice_value, color in NICE_COLORS.items():
-        print(f"{color}Priority: {nice_value}\tColor: {color}{color}\033[0m")
+    # Create the logs directory if it doesn't exist
+    if not os.path.exists(log_dir):
+        os.makedirs(log_dir)
+    full_log_path = os.path.join(log_dir, log_filename)
 
-    print("\nTotal system memory:", get_total_memory(), "MB")
-    print("Free system memory:", get_free_memory(), "MB")
-    print("Used system memory:", get_used_memory(), "MB")
-
-    # Populate lsblk and LVM caches once at startup
-    _populate_lsblk_cache()
-    _populate_lvm_cache()
-
-    # Get init process (PID 1) to start the tree
+    # Start output redirection
+    original_stdout = sys.stdout
+    log_tee = None
     try:
-        main_process = psutil.Process(1)
-    except psutil.NoSuchProcess:
-        print("Error: Init process (PID 1) not found. System might not be initialized or you lack permissions.")
-        sys.exit(1)
+        log_tee = Tee(full_log_path, "w")
+        print(f"--- Output being saved to: {full_log_path} ---")
 
-    print(f"\nTotal memory process tree: {get_process_memory_usage(main_process) / (1024 * 1024):.2f} MB")
+        print("--- Memory and Resource Usage Report ---")
+        print(f"Memory Threshold (MB): {MEMORY_THRESHOLD_MB}")
+        print(f"Open Files Threshold: {OPEN_FILES_THRESHOLD}")
+        print("---------------------------------------------")
 
-    print("\nMemory usage of each process:")
-    print("PID - Process Name (Memory Usage)")
-    show_process_tree(main_process)
+        # Print Priority Color Table
+        print("\nPriority Color Table:")
+        for nice_value, color in NICE_COLORS.items():
+            print(f"{color}Priority: {nice_value}\tColor: {color}{RESET_COLOR}")
 
-    print("\n--- End of Report ---")
-    print("\nNotes:")
-    print(" - Accessing some information - ")
-    print("e.g., open files of other users, multipath, executable hash, env vars, security context")
-    print("may require 'sudo' privileges.")
-    print(" - Read bytes and Write bytes values are cumulative since process start.")
-    print(" - 'N/A' means information could not be obtained or is not applicable.")
-    print("\n\n--- Understanding Disk Identifiers in Data Centers ---")
-    print(" - For enterprise storage (SAN/NAS), standard device names like /dev/sda are volatile.")
-    print(" - Persistent identifiers like UUID and aliases are crucial:")
-    print("   - UUID: Universal Unique Identifier of the filesystem on a partition/volume.")
-    print("     Often used in /etc/fstab for consistent mounting.")
-    print("   - ID (PARTUUID): Unique ID of the partition itself (if applicable).")
-    print("     Distinguishes partitions on the same disk when UUIDs might conflict (e.g., after cloning).")
-    print("   - ALIASES: Alternate, persistent paths to the device in /dev/disk/ by-id, by-path, by-uuid, by-label.")
-    print("     - by-id/: Hardware-based IDs (manufacturer, model, serial). Highly stable.")
-    print("     - by-path/: Physical path through hardware (PCI slot, HBA port, SCSI target).")
-    print("       * CRUCIAL for SANs: 'by-path' (e.g., pci-0000:00:10.0-scsi-0:0:0:0-part2)")
-    print("         can reveal the HBA adapter (e.g., pci-0000:00:10.0), Fibre Channel/iSCSI port,")
-    print("         and LUN ID from the storage array. This allows correlation with SAN zoning/masking.")
-    print("         It helps identify the physical location of the LUN within the storage infrastructure.")
-    print("     - by-uuid/: Symlinks using the filesystem UUID (duplicate of the UUID field, but listed here for completeness of aliases).")
-    print("     - by-label/: Symlinks using filesystem labels defined by the user.")
-    print(" - LVM (Logical Volume Management): Indicates if a file resides on a logical volume.")
-    print("   LVM allows flexible storage management over physical volumes.")
-    print(" - Disk Type (SSD/HDD), Model, Vendor: Provide insights into disk performance characteristics.")
-    print(" - Multipath (MP_ID, MP_PATHS): Shows if multiple paths exist to the same LUN for redundancy/performance.")
-    print("   Common in SAN environments to avoid single points of failure.")
-    print(" - Command and path limits have been applied for better readability.")
+        print("\nTotal system memory:", get_total_memory(), "MB")
+        print("Free system memory:", get_free_memory(), "MB")
+        print("Used system memory:", get_used_memory(), "MB")
+
+        # Populate lsblk and LVM caches once at startup
+        _populate_lsblk_cache()
+        _populate_lvm_cache()
+
+        # Get init process (PID 1) to start the tree
+        try:
+            main_process = psutil.Process(1)
+        except psutil.NoSuchProcess:
+            print("Error: Init process (PID 1) not found. System might not be initialized or you lack permissions.")
+            sys.exit(1)
+
+        print(f"\nTotal memory process tree: {get_process_memory_usage(main_process) / (1024 * 1024):.2f} MB")
+
+        print("\nMemory usage of each process:")
+        print("PID - Process Name (Memory Usage)")
+        print("-----------------------------------")
+        print("Note: 'Sudo Used' is a heuristic based on UIDs and parent process. 'SSH Origin' is based on environment variables.")
+        print("-----------------------------------")
+        show_process_tree(main_process)
+
+        print("\n--- End of Report ---")
+        print("\nNotes:")
+        print(" - Accessing some information - ")
+        print("e.g., open files of other users, multipath, executable hash, env vars, security context")
+        print("may require 'sudo' privileges.")
+        print(" - Read bytes and Write bytes values are cumulative since process start.")
+        print(" - 'N/A' means information could not be obtained or is not applicable.")
+        print(" - This tool generates human-readable text output. For structured data (JSON/HTML), a different output mode would be required.")
+        print("\n\n--- Understanding Disk Identifiers in Data Centers ---")
+        print(" - For enterprise storage (SAN/NAS), standard device names like /dev/sda are volatile.")
+        print(" - Persistent identifiers like UUID and aliases are crucial:")
+        print("    - UUID: Universal Unique Identifier of the filesystem on a partition/volume.")
+        print("      Often used in /etc/fstab for consistent mounting.")
+        print("    - ID (PARTUUID): Unique ID of the partition itself (if applicable).")
+        print("      Distinguishes partitions on the same disk when UUIDs might conflict (e.g., after cloning).")
+        print("    - ALIASES: Alternate, persistent paths to the device in /dev/disk/ by-id, by-path, by-uuid, by-label.")
+        print("      - by-id/: Hardware-based IDs (manufacturer, model, serial). Highly stable.")
+        print("      - by-path/: Physical path through hardware (PCI slot, HBA port, SCSI target).")
+        print("        * CRUCIAL for SANs: 'by-path' (e.g., pci-0000:00:10.0-scsi-0:0:0:0-part2)")
+        print("          can reveal the HBA adapter (e.g., pci-0000:00:10.0), Fibre Channel/iSCSI port,")
+        print("          and LUN ID from the storage array. This allows correlation with SAN zoning/masking.")
+        print("          It helps identify the physical location of the LUN within the storage infrastructure.")
+        print("      - by-uuid/: Symlinks using the filesystem UUID (duplicate of the UUID field, but listed here for completeness of aliases).")
+        print("      - by-label/: Symlinks using filesystem labels defined by the user.")
+        print(" - LVM (Logical Volume Management): Indicates if a file resides on a logical volume.")
+        print("    LVM allows flexible storage management over physical volumes.")
+        print(" - Disk Type (SSD/HDD), Model, Vendor: Provide insights into disk performance characteristics.")
+        print(" - Multipath (MP_ID, MP_PATHS): Shows if multiple paths exist to the same LUN for redundancy/performance.")
+        print("    Common in SAN environments to avoid single points of failure.")
+        print(" - Command and path limits have been applied for better readability.")
+
+    finally:
+        # Ensures original stdout is restored and log file is closed
+        if log_tee is not None:
+            log_tee.close()
+        # Fallback to ensure sys.stdout is always restored
+        if sys.stdout != original_stdout and not isinstance(sys.stdout, Tee):
+            sys.stdout = original_stdout
+
+        # Call HTML conversion after log generation
+        html_filename = log_filename.replace(".log", ".html")
+        full_html_path = os.path.join(log_dir, html_filename)
+        convert_log_to_html(full_log_path, full_html_path)
