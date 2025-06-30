@@ -871,21 +871,36 @@ if __name__ == '__main__':
         _populate_lsblk_cache()
         _populate_lvm_cache()
 
-        # Get init process (PID 1) to start the tree
-        try:
-            main_process = psutil.Process(1)
-        except psutil.NoSuchProcess:
-            print("Error: Init process (PID 1) not found. System might not be initialized or you lack permissions.")
-            sys.exit(1)
-
-        print(f"\nTotal memory process tree: {get_process_memory_usage(main_process) / (1024 * 1024):.2f} MB")
-
         print("\nMemory usage of each process:")
         print("PID - Process Name (Memory Usage)")
         print("-----------------------------------")
         print("Note: 'Sudo Used' is a heuristic based on UIDs and parent process. 'SSH Origin' is based on environment variables.")
         print("-----------------------------------")
-        show_process_tree(main_process)
+
+        # Lógica corrigida: Itera sobre todos os processos em vez de apenas o PID 1
+        all_pids = [p.pid for p in psutil.process_iter()]
+
+        total_mem = 0
+        # Calcula a memória total de todos os processos
+        for pid in all_pids:
+            try:
+                p = psutil.Process(pid)
+                total_mem += p.memory_info().rss
+            except (psutil.NoSuchProcess, psutil.AccessDenied):
+                continue
+
+        print(f"\nTotal memory process tree: {total_mem / (1024 * 1024):.2f} MB")
+
+        # Itera sobre todos os processos e exibe a árvore para os processos "órfãos" ou filhos do init
+        # Isso garante que todas as árvores de processo sejam exibidas
+        for pid in all_pids:
+            try:
+                p = psutil.Process(pid)
+                # Um processo é "top-level" se seu pai não existe mais ou é o PID 1
+                if p.ppid() not in all_pids or p.ppid() == 1:
+                    show_process_tree(p)
+            except (psutil.NoSuchProcess, psutil.AccessDenied):
+                continue
 
         print("\n--- End of Report ---")
         print("\nNotes:")
