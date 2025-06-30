@@ -12,18 +12,27 @@ troubleshooting and security auditing. It details:
 - Anomaly detection via suspicious environment variables.
 Designed for system administrators, security analysts, and DevOps engineers.
 
+
+---
+
+## Hands-On Lab: Troubleshooting a High I/O Scenario
+
+Want to see `memusage.py` in action? Follow our step-by-step tutorial to simulate and diagnose a real-world disk I/O bottleneck.
+
+**➡️ [Click here to open the Lab Instructions](./LAB.md)**
+
+---
+
 ## Features
 
-* Shows total system memory, free memory, and used memory.
-* Displays process information in a hierarchical tree format.
-* Calculates the total memory usage of a process and its children.
-* Shows open files for each process.
-* Displays network connections for each process, including:
-    * Local and remote addresses
-    * Status
-    * Sent and received bytes (for established connections)
-* Shows I/O activity for each process, including read and write bytes.
-* Color-coded output based on process priority.
+`memusage` gives a detailed, hierarchical view of system processes, including:
+
+- **Memory:** Current and cumulative usage for a process and its entire child tree.
+- **Open Files:** Lists open files with extensive disk attributes (filesystem, mount options, UUIDs, LVM, multipath, disk type, model, and vendor).
+- **Network:** Active network connections with addresses, status, and I/O stats.
+- **Disk I/O:** Cumulative read and write bytes for each process.
+- **Forensics:** The MD5 hash of the process executable for integrity verification.
+- **Security:** The process's security context (e.g., AppArmor/SELinux) and highlights potentially suspicious environment variables.
 
 ## Installation
 
@@ -32,8 +41,14 @@ For detailed installation instructions, please see the [INSTALL.md](INSTALL.md) 
 
 ## Running code (Not Installation)
 
-1.  Install the `psutil` package: `pip install psutil`
-2.  Save the `memory_usage.py` script to your system.
+1.  **Install dependency:**
+    ```bash
+    pip3 install psutil
+    ```
+2.  **Run the script:**
+    ```bash
+    python3 memusage.py
+    ```
 
 ## Usage - Running code (Not Installation)
 
