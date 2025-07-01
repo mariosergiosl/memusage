@@ -1,5 +1,5 @@
 Name:            memusage
-Version:         0.3.0
+Version:         0.3.1
 Release:         1%{?dist}
 Summary:         A Swiss Army knife for comprehensive Linux process analysis. # Descrição atualizada
 
@@ -44,5 +44,5 @@ install -Dm 0755 %{_builddir}/%{name}-main/%{name}.py %{buildroot}%{_bindir}/%{n
 %{_bindir}/%{name}
 
 %changelog
-* %{_current_date} Mario Luz <mario.mssl[at]google.com> - 0.3.0
-- Initial package release based on tag v0.3.0.
+* %{_current_date} Mario Luz <mario.mssl[at]google.com> - 0.3.1
+- Initial package release based on tag v0.3.1.

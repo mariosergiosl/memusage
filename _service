@@ -3,7 +3,7 @@
     <param name="scm">git</param>
     <param name="changesgenerate">enable</param>
     <param name="url">https://github.com/mariosergiosl/memusage.git</param>
-    <param name="revision">tags/v0.3.0</param>
+    <param name="revision">tags/v0.3.1</param>
     </service>
   <service name="recompress">
     <param name="file">*.tar</param>
