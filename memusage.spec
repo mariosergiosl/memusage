@@ -1,14 +1,12 @@
 Name:            memusage
 Version:         0.3.1
 Release:         1%{?dist}
-Summary:         A Swiss Army knife for comprehensive Linux process analysis. # Descrição atualizada
+Summary:         A Swiss Army knife for comprehensive Linux process analysis.
 
 BuildArch:       noarch
 License:         GPL-2.0-only
 URL:             https://github.com/mariosergiosl/memusage
-# Source0: Aponta para o link direto de download do tarball do branch 'main' do GitHub.
-# Este arquivo contém o memusage.py na raiz após a extração.
-Source0:         %{url}/archive/refs/tags/v%{version}.tar.gz 
+Source0:         https://github.com/mariosergiosl/memusage/archive/main.tar.gz 
 Group:           System/Management
 
 
