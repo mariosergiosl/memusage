@@ -1,5 +1,5 @@
 Name:           memusage
-Version:        0.2
+Version:        0.0.0
 Release:        1%{?dist}
 Summary:        A Swiss Army knife for comprehensive Linux process analysis.
 
@@ -43,8 +43,8 @@ Designed for system administrators, security analysts, and DevOps engineers.
 %files
 # List files to be included in the RPM package.
 # %{_bindir}/%{name} comes from setup.py entry_points
-%attr(0755, -, -) %{_bindir}/%{name} # Mantenha apenas esta linha para o executável
-%{python3_sitelib}/%{name}.py # Listar o arquivo do módulo Python
+%attr(0755, -, -) %{_bindir}/%{name}
+%{python3_sitelib}/%{name}.py
 
 %changelog
 * %{_current_date} Mario Luz <mario.mssl[at]google.com> - %{version}
