@@ -38,7 +38,8 @@ Designed for system administrators, security analysts, and DevOps engineers.
 # %setup -q
 # %autosetup -p1 -n %{name}-%{version}
 find . -maxdepth 2 -print -exec ls -ld {} \;
-%autosetup -p1
+# %autosetup -p1
+%autosetup
 
 %build
 # %pip install --prefix=%{buildroot}%{_prefix} .
