@@ -3,7 +3,7 @@ Version:        0.2
 Release:        1%{?dist}
 Summary:        A Swiss Army knife for comprehensive Linux process analysis.
 
-BuildArch: 	    noarch
+BuildArch:      noarch
 License:        GPL-3.0-or-later
 URL:            https://github.com/mariosergiosl/memusage
 Source0:        %{name}-%{version}.tar.xz
@@ -36,14 +36,16 @@ Designed for system administrators, security analysts, and DevOps engineers.
 %pip install --prefix=%{buildroot}%{_prefix} .
 
 %install
-# install -Dm 0755 %{name}.py %{buildroot}%{_bindir}/%{name}
+# The %pip install in %build handles installation into %{buildroot}.
+# This line is typically not needed if setup.py defines entry_points.
+# # install -Dm 0755 %{name}.py %{buildroot}%{_bindir}/%{name}
 
 %files
-%{_bindir}/%{name}
-%attr(0755, -, -) %{_bindir}/%{name}
-%{python3_sitelib}/%{name}.py
+# List files to be included in the RPM package.
+# %{_bindir}/%{name} comes from setup.py entry_points
+%attr(0755, -, -) %{_bindir}/%{name} # Mantenha apenas esta linha para o executável
+%{python3_sitelib}/%{name}.py # Listar o arquivo do módulo Python
 
 %changelog
 * %{_current_date} Mario Luz <mario.mssl[at]google.com> - %{version}
 - Updated package to version %{version} with enhanced features for disk, security, and Pylint fixes.
-
