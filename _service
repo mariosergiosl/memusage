@@ -13,5 +13,4 @@
     <param name="archive">*.tar.xz</param>
     <param name="files">*.spec</param> 
     </service>
-  <service name="set_version" />
 </services>
