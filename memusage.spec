@@ -6,7 +6,7 @@ Summary:         A Swiss Army knife for comprehensive Linux process analysis.
 BuildArch:       noarch
 License:         GPL-2.0-only
 URL:             https://github.com/mariosergiosl/memusage
-Source0:         %{name}-%{version.tar.gz
+Source0:         %{name}-%{version}.tar.gz
 Group:           System/Management
 
 
