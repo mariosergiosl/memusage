@@ -34,7 +34,8 @@ Designed for system administrators, security analysts, and DevOps engineers.
 # %setup -q -n %{name}-%{version}
 # %setup -q -n memusage-main
 # %setup -q
-%autosetup -p1 -n %{name}-%{version}
+# %autosetup -p1 -n %{name}-%{version}
+%autosetup -p1
 
 %build
 # %pip install --prefix=%{buildroot}%{_prefix} .
