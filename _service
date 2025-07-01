@@ -5,6 +5,7 @@
     <param name="url">https://github.com/mariosergiosl/memusage.git</param>
     <param name="revision">main</param> 
     <param name="extract">1</param>
+    <param name="src_name">memusage-%{version}</param>
   </service>
   <service name="recompress">
     <param name="file">*.tar</param>

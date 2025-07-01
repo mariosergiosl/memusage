@@ -37,6 +37,8 @@ Designed for system administrators, security analysts, and DevOps engineers.
 
 %files
 %{_bindir}/%{name}
+%attr(0755, -, -) %{_bindir}/%{name}
+%{python3_sitelib}/%{name}.py
 
 %changelog
 * Fri Jun 13 2025 Mario Luz <mario.mssl[at]google.com> - 0.2
