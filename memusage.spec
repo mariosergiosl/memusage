@@ -5,10 +5,12 @@ Summary:         A Swiss Army knife for comprehensive Linux process analysis.
 BuildArch:       noarch
 License:         GPL-2.0-only
 URL:             https://github.com/mariosergiosl/memusage
-Source0:         %{name}-0.2.tar.xz
+Source0:         %{name}-%{version}.tar.xz
 Group:           System/Management
 
 BuildRequires:   python3
+BuildRequires:   python3-setuptools
+BuildRequires:   python3-pip
 BuildRequires:   python3-psutil
 
 %description
@@ -28,10 +30,10 @@ Designed for system administrators, security analysts, and DevOps engineers.
 %setup -q
 
 %build
-# No build steps required for Python script
+%pip install --prefix=%{buildroot}%{_prefix} .
 
 %install
-install -Dm 0755 %{name}.py %{buildroot}%{_bindir}/%{name}
+# install -Dm 0755 %{name}.py %{buildroot}%{_bindir}/%{name}
 
 %files
 %{_bindir}/%{name}

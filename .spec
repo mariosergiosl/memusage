@@ -1,36 +1,49 @@
 Name:           memusage
-Version:        0.1
+Version:        0.2
 Release:        1%{?dist}
-Summary:        Display memory usage of processes
+Summary:        A Swiss Army knife for comprehensive Linux process analysis.
 
-BuildArch: 	noarch
+BuildArch: 	    noarch
 License:        GPL-3.0-or-later
 URL:            https://github.com/mariosergiosl/memusage
-Source0:        %{name}-0.1.tar.xz
+Source0:        %{name}-%{version}.tar.xz
 Group:          System/Management
 
 
 BuildRequires:  python3
+BuildRequires:  python3-setuptools
+BuildRequires:  python3-pip
 BuildRequires:  python3-psutil
 
 %description
-This tool displays the memory usage of processes on a Linux system, 
-including total system memory, free memory, and used memory. 
-It also shows the memory usage of each process in a hierarchical tree format.
+This tool provides deep insights into process behavior, making it invaluable for
+troubleshooting and security auditing.
+It details:
+- Memory usage (current and cumulative process tree).
+- Open files, including extensive disk attributes (filesystem type, mount options,
+  UUIDs, LVM, multipath, disk type, model, vendor, and persistent device aliases).
+- Network connections (local/remote addresses, status).
+- I/O activity (read/write bytes).
+- Executable forensics (MD5 hash for integrity checks).
+- Process context (full command line, security labels like AppArmor/SELinux).
+- Anomaly detection via suspicious environment variables.
+Designed for system administrators, security analysts, and DevOps engineers.
 
 %prep
 %setup -q
 
 %build
-# No build steps required for Python script
+%pip install --prefix=%{buildroot}%{_prefix} .
 
 %install
-install -Dm 0755 %{name}.py %{buildroot}%{_bindir}/%{name}
+# install -Dm 0755 %{name}.py %{buildroot}%{_bindir}/%{name}
 
 %files
 %{_bindir}/%{name}
+%attr(0755, -, -) %{_bindir}/%{name}
+%{python3_sitelib}/%{name}.py
 
 %changelog
-* Tue Nov 14 2024 Mario Luz <mario.mssl[at]google.com> - 0.1
-- Initial package release.
+* %{_current_date} Mario Luz <mario.mssl[at]google.com> - %{version}
+- Updated package to version %{version} with enhanced features for disk, security, and Pylint fixes.
 
