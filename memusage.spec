@@ -2,11 +2,14 @@ Name:            memusage
 Version:         0.2
 Release:         1%{?dist}
 Summary:         A Swiss Army knife for comprehensive Linux process analysis.
+
 BuildArch:       noarch
 License:         GPL-2.0-only
 URL:             https://github.com/mariosergiosl/memusage
-Source0:         %{name}-%{version}.tar.xz
+# AJUSTADO: Source0 agora corresponde ao que tar_scm gera (name-timestamp.githash.tar.xz)
+Source0:         %{name}-%{_scm_date}.%{_scm_commit}.tar.xz 
 Group:           System/Management
+
 
 BuildRequires:   python3
 BuildRequires:   python3-setuptools
@@ -15,7 +18,8 @@ BuildRequires:   python3-psutil
 
 %description
 This tool provides deep insights into process behavior, making it invaluable for
-troubleshooting and security auditing. It details:
+troubleshooting and security auditing.
+It details:
 - Memory usage (current and cumulative process tree).
 - Open files, including extensive disk attributes (filesystem type, mount options,
   UUIDs, LVM, multipath, disk type, model, vendor, and persistent device aliases).
@@ -33,13 +37,16 @@ Designed for system administrators, security analysts, and DevOps engineers.
 %pip install --prefix=%{buildroot}%{_prefix} .
 
 %install
-# install -Dm 0755 %{name}.py %{buildroot}%{_bindir}/%{name}
+# The %pip install in %build handles installation into %{buildroot}.
+# This line is typically not needed if setup.py defines entry_points.
+# # install -Dm 0755 %{name}.py %{buildroot}%{_bindir}/%{name}
 
 %files
-%{_bindir}/%{name}
+# List files to be included in the RPM package.
+# %{_bindir}/%{name} comes from setup.py entry_points
 %attr(0755, -, -) %{_bindir}/%{name}
-%{python3_sitelib}/%{name}.py
+# %{python3_sitelib}/%{name}.py
 
 %changelog
-* Fri Jun 13 2025 Mario Luz <mario.mssl[at]google.com> - 0.2
-- Updated to version 0.2 with enhanced features for disk, security, and Pylint fixes.
+* %{_current_date} Mario Luz <mario.mssl[at]google.com> - %{version}
+- Updated package to version %{version} with enhanced features for disk, security, and Pylint fixes.
