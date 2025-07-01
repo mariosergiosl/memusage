@@ -51,5 +51,5 @@ install -Dm 0755 %{name}.py %{buildroot}%{_bindir}/%{name}
 %{_bindir}/%{name}
 
 %changelog
-- Mario Luz <mario.mssl[at]google.com> - 0.3.1
-- Initial package release based on tag v0.3.1.
+* - Mario Luz <mario.mssl[at]google.com> - 0.3.1
+* - Initial package release based on tag v0.3.1.
