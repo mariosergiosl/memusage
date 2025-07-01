@@ -33,9 +33,9 @@ It details:
 Designed for system administrators, security analysts, and DevOps engineers.
 
 %prep
-%setup -q -n %{name}-%{version}
+#        # %setup -q -n %{name}-%{version}
 # %setup -q -n memusage-main
-# %setup -q
+%setup -q
 # %autosetup -p1 -n %{name}-%{version}
 #  find . -maxdepth 2 -print -exec ls -ld {} \;
 #  %autosetup -p1
