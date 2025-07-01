@@ -26,4 +26,4 @@
 
 ## Contributors
 
-Special thanks to @Mario Luz and @mauricioperez for their valuable contributions and suggestions.
+Special thanks to @Mario Luz and @mauriciosperez for their valuable contributions and suggestions.
