@@ -4,5 +4,11 @@
     <param name="changesgenerate">enable</param>
     <param name="url">https://github.com/mariosergiosl/memusage.git</param>
     <param name="revision">main</param> 
+    <param name="extract">1</param>
   </service>
+  <service name="recompress">
+    <param name="file">*.tar</param>
+    <param name="compression">xz</param>
+  </service>
+  <service name="set_version" />  
 </services>

@@ -11,7 +11,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setup(
     name='memusage',
-    version='0.2',
+    version='0.3.1',
     author='Mario Luz',
     author_email='mario.mssl[at]gmail.com',
     description='A tool to display memory usage of processes on a Linux system',
