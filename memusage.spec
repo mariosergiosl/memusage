@@ -7,8 +7,8 @@ BuildArch:       noarch
 License:         GPL-2.0-only
 URL:             https://github.com/mariosergiosl/memusage
 # Source0:         _service:recompresstar_scm:memusage-*.tar.xz
-Source0:         memusage-*.tar.xz
-# # Source0:         %{name}-%{version}.tar.xz
+# Source0:         memusage-*.tar.xz
+Source0:         %{name}-%{version}.tar.xz
 # Source0:         %{name}.tar.xz
 Group:           System/Management
 
@@ -33,12 +33,12 @@ It details:
 Designed for system administrators, security analysts, and DevOps engineers.
 
 %prep
-# %setup -q -n %{name}-%{version}
+%setup -q -n %{name}-%{version}
 # %setup -q -n memusage-main
 # %setup -q
 # %autosetup -p1 -n %{name}-%{version}
-find . -maxdepth 2 -print -exec ls -ld {} \;
-%autosetup -p1
+#  find . -maxdepth 2 -print -exec ls -ld {} \;
+#  %autosetup -p1
 
 %build
 # %pip install --prefix=%{buildroot}%{_prefix} .
