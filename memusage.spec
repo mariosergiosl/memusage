@@ -30,7 +30,8 @@ It details:
 Designed for system administrators, security analysts, and DevOps engineers.
 
 %prep
-%setup -q -n %{name}-%{version}
+# %setup -q -n %{name}-%{version}
+%setup -q -n memusage-main
 
 %build
 # %pip install --prefix=%{buildroot}%{_prefix} .
