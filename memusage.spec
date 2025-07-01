@@ -1,18 +1,18 @@
 Name:            memusage
-Version:         0.2
+Version:         0.1
 Release:         1%{?dist}
-Summary:         A Swiss Army knife for comprehensive Linux process analysis.
+Summary:         A Swiss Army knife for comprehensive Linux process analysis. # Descrição atualizada
 
 BuildArch:       noarch
 License:         GPL-2.0-only
 URL:             https://github.com/mariosergiosl/memusage
-Source0:         %{name}-0.2.tar.xz 
+# Source0: Aponta para o link direto de download do tarball do branch 'main' do GitHub.
+# Este arquivo contém o memusage.py na raiz após a extração.
+Source0:         %{url}/archive/main.tar.gz 
 Group:           System/Management
 
 
 BuildRequires:   python3
-BuildRequires:   python3-setuptools
-BuildRequires:   python3-pip
 BuildRequires:   python3-psutil
 
 %description
@@ -30,19 +30,20 @@ It details:
 Designed for system administrators, security analysts, and DevOps engineers.
 
 %prep
-%setup -q
+# Extrai o tarball do repositório Git completo (Source0).
+# GitHub's main.tar.gz geralmente extrai para uma pasta nomeada como 'memusage-main'.
+%setup -q -n %{name}-main 
 
-%build
-# %pip install --prefix=%{buildroot}%{_prefix} .
+# Não precisamos de %build complexo, pois o %install copia diretamente o script.
 
 %install
-install -Dm 0755 %{name}.py %{buildroot}%{_bindir}/%{name}
+# Copia manualmente o script 'memusage.py' do diretório fonte extraído.
+# O diretório fonte após %prep será %{_builddir}/%{name}-main/
+install -Dm 0755 %{_builddir}/%{name}-main/%{name}.py %{buildroot}%{_bindir}/%{name}
 
 %files
-%{_bindir}/%{name} comes from setup.py entry_points
-# %attr(0755, -, -) %{_bindir}/%{name}
-# %{python3_sitelib}/%{name}.py
+%{_bindir}/%{name} # Inclui apenas o executável no RPM, como na versão funcional
 
 %changelog
-* %{_current_date} Mario Luz <mario.mssl[at]google.com> - %{version}
-- Updated package to version %{version} with enhanced features for disk, security, and Pylint fixes.
+* %{_current_date} Mario Luz <mario.mssl[at]google.com> - 0.1
+- Initial package release.
