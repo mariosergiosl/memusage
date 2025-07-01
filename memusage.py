@@ -38,6 +38,7 @@ import subprocess
 import hashlib
 import sys
 import datetime
+from typing import Optional
 
 import psutil
 
@@ -153,8 +154,8 @@ def _populate_lsblk_cache():
             if 'name' in device_info:
                 _LSBLK_CACHE_PARSED[device_info['name']] = device_info
     except Exception as e:
-        # print(f"DEBUG: Error populating lsblk cache: {e}") # Debugging
-        _LSBLK_CACHE_PARSED = {}  # Ensure cache is empty on error
+        # print(f"DEBUG: Error populating lsblk cache: {e}")
+        _LSBLK_CACHE_PARSED = {}
 
 
 _LVS_CACHE = {}  # Cache for LVM Logical Volumes
@@ -184,7 +185,7 @@ def _populate_lvm_cache():
                 vg_name, vg_size = parts[0], parts[1]
                 _VGS_CACHE[vg_name] = {'vg_size': vg_size, 'vg_free': parts[2] if len(parts) > 2 else 'N/A'}
     except Exception:
-        # print(f"DEBUG: Error populating LVM cache: {e}")  # Debugging
+        # print(f"DEBUG: Error populating LVM cache: {e}")
         _LVS_CACHE = {}
         _VGS_CACHE = {}
 
@@ -397,9 +398,9 @@ def get_open_files_enhanced(process: psutil.Process) -> list:
             file_info = {
                 'path': file_obj.path,
                 'fd': file_obj.fd,
-                'position': file_obj.position,
-                'mode': file_obj.mode,
-                'flags': file_obj.flags,
+                'position': file_obj.position,  # type: ignore
+                'mode': file_obj.mode,  # type: ignore
+                'flags': file_obj.flags,  # type: ignore
             }
 
             # Get Mount Point and Options
@@ -507,7 +508,7 @@ def get_executable_hash(process: psutil.Process) -> str:
     except (psutil.NoSuchProcess, psutil.AccessDenied, FileNotFoundError):
         return "N/A"
     except Exception as e:
-        # print(f"Error getting hash for {exe_path}: {e}")  # For debugging, if needed
+        # print(f"Error getting hash for {exe_path}: {e}")
         return "N/A"
 
 
@@ -562,12 +563,20 @@ def get_security_context(process_pid: int) -> str:
     return context
 
 
-def show_process_tree(process: psutil.Process, level=0):
+# MODIFIED: Added displayed_pids parameter
+def show_process_tree(process: psutil.Process, level=0, displayed_pids: Optional[set] = None):
     """Displays the process tree with memory usage, open files,
        network connections, and I/O counters, including enhanced file info,
        loaded libraries, executable hash, suspicious environment variables,
        security context, user info, and sudo indicator.
     """
+    # Initialize displayed_pids if not provided (for the very first call)
+    if displayed_pids is None:
+        displayed_pids = set()
+
+    # Mark this process as displayed
+    displayed_pids.add(process.pid)
+
     try:
         nice_value = process.nice()
         color = NICE_COLORS.get(nice_value, RESET_COLOR)
@@ -729,12 +738,13 @@ def show_process_tree(process: psutil.Process, level=0):
 
         # Children processes
         for child in process.children():
-            show_process_tree(child, level + 1)
+            # Pass displayed_pids to recursive calls to avoid re-printing already visited processes
+            show_process_tree(child, level + 1, displayed_pids=displayed_pids)
 
     except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
         # For inaccessible processes, still show PID and an error note,
         # and sub-information can be "N/A"
-        print(f"{'  ' * level}{color}{process.pid} - {process.name()} (Error: Access Denied/Process Vanished){RESET_COLOR}")
+        print(f"{'  ' * level}{color}{process.pid} - {process.name()} (Error: Access Denied/Process Vanished){RESET_COLOR}")  # type: ignore
         print(f"{'  ' * (level + 1)}- User: N/A")
         print(f"{'  ' * (level + 1)}- Sudo Used: N/A")
         print(f"{'  ' * (level + 1)}- SSH Origin: N/A")
@@ -750,21 +760,27 @@ def show_process_tree(process: psutil.Process, level=0):
 
 # Class to duplicate output (console and log file)
 class Tee:
+    """A class to redirect stdout to both console and a file."""
     def __init__(self, name, mode):
-        # W1514 (unspecified-encoding) - added encoding='utf-8'
+        """Initializes the Tee object to write to a file and stdout."""
         self.file = open(name, mode, encoding='utf-8')
         self.stdout = sys.stdout
         sys.stdout = self
 
     def write(self, data):
-        self.file.write(data)
-        self.stdout.write(data)
+        """Writes data to both the file and the original stdout, if not None."""
+        self.file.write(data)  # type: ignore
+        if self.stdout is not None:
+            self.stdout.write(data)
 
     def flush(self):
-        self.file.flush()
-        self.stdout.flush()
+        """Flushes buffered data for both the file and the original stdout, if not None."""
+        self.file.flush()  # type: ignore
+        if self.stdout is not None:
+            self.stdout.flush()
 
     def close(self):
+        """Restores original stdout and closes the file."""
         if self.stdout is not None:
             sys.stdout = self.stdout
             self.stdout = None
@@ -780,12 +796,10 @@ def convert_log_to_html(log_filepath, html_filepath):
     preserving formatting and colors.
     """
     try:
-        # W1514 (unspecified-encoding) - added encoding='utf-8'
         with open(log_filepath, 'r', encoding='utf-8') as log_file:
             log_content = log_file.read()
 
         # Replaces ANSI codes with HTML tags with CSS style
-        # It's important to replace RESET_COLOR with </span> to close opened tags.
         for ansi_code, html_tag in ANSI_COLOR_MAP.items():
             log_content = log_content.replace(ansi_code, html_tag)
 
@@ -822,7 +836,6 @@ def convert_log_to_html(log_filepath, html_filepath):
 </body>
 </html>
 """
-        # W1514 (unspecified-encoding) - added encoding='utf-8'
         with open(html_filepath, 'w', encoding='utf-8') as html_file:
             html_file.write(html_template)
 
@@ -877,61 +890,47 @@ if __name__ == '__main__':
         print("Note: 'Sudo Used' is a heuristic based on UIDs and parent process. 'SSH Origin' is based on environment variables.")
         print("-----------------------------------")
 
-        # Lógica corrigida: Itera sobre todos os processos em vez de apenas o PID 1
-        all_pids = [p.pid for p in psutil.process_iter()]
+        # Get all PIDs to iterate through, ensuring all process trees are displayed
+        all_pids = set()  # Use a set to avoid duplicates and improve lookup speed
+        for p_obj in psutil.process_iter(['pid']):  # Only fetch PID for efficiency
+            all_pids.add(p_obj.pid)
 
         total_mem = 0
-        # Calcula a memória total de todos os processos
+        # Calculate total memory of all processes
         for pid in all_pids:
             try:
-                p = psutil.Process(pid)
-                total_mem += p.memory_info().rss
+                p_obj = psutil.Process(pid)
+                total_mem += p_obj.memory_info().rss
             except (psutil.NoSuchProcess, psutil.AccessDenied):
                 continue
 
         print(f"\nTotal memory process tree: {total_mem / (1024 * 1024):.2f} MB")
 
-        # Itera sobre todos os processos e exibe a árvore para os processos "órfãos" ou filhos do init
-        # Isso garante que todas as árvores de processo sejam exibidas
-        for pid in all_pids:
-            try:
-                p = psutil.Process(pid)
-                # Um processo é "top-level" se seu pai não existe mais ou é o PID 1
-                if p.ppid() not in all_pids or p.ppid() == 1:
-                    show_process_tree(p)
-            except (psutil.NoSuchProcess, psutil.AccessDenied):
+        # Iterate over all PIDs to find top-level processes
+        # A process is "top-level" if its parent no longer exists or is PID 1 (init)
+        displayed_pids = set()  # To prevent displaying the same tree multiple times
+
+        for pid in sorted(list(all_pids)):  # Sort PIDs for consistent output
+            if pid in displayed_pids:
                 continue
 
-        print("\n--- End of Report ---")
-        print("\nNotes:")
-        print(" - Accessing some information - ")
-        print("e.g., open files of other users, multipath, executable hash, env vars, security context")
-        print("may require 'sudo' privileges.")
-        print(" - Read bytes and Write bytes values are cumulative since process start.")
-        print(" - 'N/A' means information could not be obtained or is not applicable.")
-        print(" - This tool generates human-readable text output. For structured data (JSON/HTML), a different output mode would be required.")
-        print("\n\n--- Understanding Disk Identifiers in Data Centers ---")
-        print(" - For enterprise storage (SAN/NAS), standard device names like /dev/sda are volatile.")
-        print(" - Persistent identifiers like UUID and aliases are crucial:")
-        print("    - UUID: Universal Unique Identifier of the filesystem on a partition/volume.")
-        print("      Often used in /etc/fstab for consistent mounting.")
-        print("    - ID (PARTUUID): Unique ID of the partition itself (if applicable).")
-        print("      Distinguishes partitions on the same disk when UUIDs might conflict (e.g., after cloning).")
-        print("    - ALIASES: Alternate, persistent paths to the device in /dev/disk/ by-id, by-path, by-uuid, by-label.")
-        print("      - by-id/: Hardware-based IDs (manufacturer, model, serial). Highly stable.")
-        print("      - by-path/: Physical path through hardware (PCI slot, HBA port, SCSI target).")
-        print("        * CRUCIAL for SANs: 'by-path' (e.g., pci-0000:00:10.0-scsi-0:0:0:0-part2)")
-        print("          can reveal the HBA adapter (e.g., pci-0000:00:10.0), Fibre Channel/iSCSI port,")
-        print("          and LUN ID from the storage array. This allows correlation with SAN zoning/masking.")
-        print("          It helps identify the physical location of the LUN within the storage infrastructure.")
-        print("      - by-uuid/: Symlinks using the filesystem UUID (duplicate of the UUID field, but listed here for completeness of aliases).")
-        print("      - by-label/: Symlinks using filesystem labels defined by the user.")
-        print(" - LVM (Logical Volume Management): Indicates if a file resides on a logical volume.")
-        print("    LVM allows flexible storage management over physical volumes.")
-        print(" - Disk Type (SSD/HDD), Model, Vendor: Provide insights into disk performance characteristics.")
-        print(" - Multipath (MP_ID, MP_PATHS): Shows if multiple paths exist to the same LUN for redundancy/performance.")
-        print("    Common in SAN environments to avoid single points of failure.")
-        print(" - Command and path limits have been applied for better readability.")
+            try:
+                p = psutil.Process(pid)
+                # Check if it's a top-level process to start a new tree print
+                # This condition covers init (PID 1) and orphan processes
+                # For non-init processes, check if parent is not in our list of all PIDs
+                # (meaning parent either doesn't exist or we haven't processed it yet as a parent of this specific sub-tree start)
+                # Or if parent is init (PID 1), which is always a tree root.
+                if p.ppid() == 0 or p.ppid() == 1 or p.ppid() not in all_pids:
+                    # We print the tree and collect all PIDs printed in this call
+                    show_process_tree(p, displayed_pids=displayed_pids)
+            except (psutil.NoSuchProcess, psutil.AccessDenied):
+                # If we can't access a process to check its parent, it might be gone.
+                # Just skip it if it's not already displayed.
+                pass
+
+    except Exception as e:
+        print(f"An unexpected error occurred during report generation: {e}")
 
     finally:
         # Ensures original stdout is restored and log file is closed
@@ -945,3 +944,33 @@ if __name__ == '__main__':
         html_filename = log_filename.replace(".log", ".html")
         full_html_path = os.path.join(log_dir, html_filename)
         convert_log_to_html(full_log_path, full_html_path)
+
+    print("\n--- End of Report ---")
+    print("\nNotes:")
+    print(" - Accessing some information - ")
+    print("e.g., open files of other users, multipath, executable hash, env vars, security context")
+    print("may require 'sudo' privileges.")
+    print(" - Read bytes and Write bytes values are cumulative since process start.")
+    print(" - 'N/A' means information could not be obtained or is not applicable.")
+    print(" - This tool generates human-readable text output. For structured data (JSON/HTML), a different output mode would be required.")
+    print("\n\n--- Understanding Disk Identifiers in Data Centers ---")
+    print(" - For enterprise storage (SAN/NAS), standard device names like /dev/sda are volatile.")
+    print(" - Persistent identifiers like UUID and aliases are crucial:")
+    print("    - UUID: Universal Unique Identifier of the filesystem on a partition/volume.")
+    print("      Often used in /etc/fstab for consistent mounting.")
+    print("    - ID (PARTUUID): Unique ID of the partition itself (if applicable).")
+    print("      Distinguishes partitions on the same disk when UUIDs might conflict (e.g., after cloning).")
+    print("    - ALIASES: Alternate, persistent paths to the device in /dev/disk/ by-id, by-path, by-uuid, by-label.")
+    print("      - by-id/: Hardware-based IDs (manufacturer, model, serial). Highly stable.")
+    print("      - by-path/: Physical path through hardware (PCI slot, HBA port, SCSI target).")
+    print("          can reveal the HBA adapter (e.g., pci-0000:00:10.0), Fibre Channel/iSCSI port,")
+    print("          and LUN ID from the storage array. This allows correlation with SAN zoning/masking.")
+    print("          It helps identify the physical location of the LUN within the storage infrastructure.")
+    print("      - by-uuid/: Symlinks using the filesystem UUID (duplicate of the UUID field, but listed here for completeness of aliases).")
+    print("      - by-label/: Symlinks using filesystem labels defined by the user.")
+    print(" - LVM (Logical Volume Management): Indicates if a file resides on a logical volume.")
+    print("    LVM allows flexible storage management over physical volumes.")
+    print(" - Disk Type (SSD/HDD), Model, Vendor: Provide insights into disk performance characteristics.")
+    print(" - Multipath (MP_ID, MP_PATHS): Shows if multiple paths exist to the same LUN for redundancy/performance.")
+    print("    Common in SAN environments to avoid single points of failure.")
+    print(" - Command and path limits have been applied for better readability.")
