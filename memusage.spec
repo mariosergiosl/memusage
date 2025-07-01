@@ -6,8 +6,7 @@ Summary:         A Swiss Army knife for comprehensive Linux process analysis.
 BuildArch:       noarch
 License:         GPL-2.0-only
 URL:             https://github.com/mariosergiosl/memusage
-# AJUSTADO: Source0 agora corresponde ao que tar_scm gera (name-timestamp.githash.tar.xz)
-Source0:         %{name}-%{_scm_date}.%{_scm_commit}.tar.xz 
+Source0:         %{name}-0.2.tar.xz 
 Group:           System/Management
 
 
@@ -34,17 +33,14 @@ Designed for system administrators, security analysts, and DevOps engineers.
 %setup -q
 
 %build
-%pip install --prefix=%{buildroot}%{_prefix} .
+# %pip install --prefix=%{buildroot}%{_prefix} .
 
 %install
-# The %pip install in %build handles installation into %{buildroot}.
-# This line is typically not needed if setup.py defines entry_points.
-# # install -Dm 0755 %{name}.py %{buildroot}%{_bindir}/%{name}
+install -Dm 0755 %{name}.py %{buildroot}%{_bindir}/%{name}
 
 %files
-# List files to be included in the RPM package.
-# %{_bindir}/%{name} comes from setup.py entry_points
-%attr(0755, -, -) %{_bindir}/%{name}
+%{_bindir}/%{name} comes from setup.py entry_points
+# %attr(0755, -, -) %{_bindir}/%{name}
 # %{python3_sitelib}/%{name}.py
 
 %changelog
