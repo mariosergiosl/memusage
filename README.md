@@ -1,5 +1,13 @@
 # memusage - A Swiss Army knife for comprehensive Linux process analysis
 
+[![License: GPL v2](https://img.shields.io/badge/License-GPL%20v2-blue.svg)](https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html)
+[![Python](https://img.shields.io/badge/Python-3.8%2B-blue?logo=python)](https://www.python.org/)
+[![GitHub](https://img.shields.io/badge/GitHub-Repo-black?logo=github)](https://github.com/mariosergiosl/memusage)
+[![Platform](https://img.shields.io/badge/Platform-Linux-green?logo=linux)](https://www.kernel.org/)
+[![Build Status](https://img.shields.io/github/actions/workflow/status/mariosergiosl/memusage/ci.yml?label=Build)](https://github.com/mariosergiosl/memusage/actions)
+[![GitHub Issues](https://img.shields.io/github/issues/mariosergiosl/memusage)](https://github.com/mariosergiosl/memusage/issues)
+[![Downloads](https://img.shields.io/github/downloads/mariosergiosl/memusage/total?label=Downloads)](https://github.com/mariosergiosl/memusage/releases)
+
 This tool provides deep insights into process behavior, making it invaluable for
 troubleshooting and security auditing. It details:
 - Memory usage (current and cumulative process tree).
