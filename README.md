@@ -1,15 +1,19 @@
 # memusage - A Swiss Army knife for comprehensive Linux process analysis
 
-[![License: GPL v2](https://img.shields.io/badge/License-GPL%20v2-blue.svg)](https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html)
-[![Python](https://img.shields.io/badge/Python-3.8%2B-blue?logo=python)](https://www.python.org/)
-[![GitHub](https://img.shields.io/badge/GitHub-Repo-black?logo=github)](https://github.com/mariosergiosl/memusage)
-[![Platform](https://img.shields.io/badge/Platform-Linux-green?logo=linux)](https://www.kernel.org/)
-[![Build Status](https://img.shields.io/github/actions/workflow/status/mariosergiosl/memusage/ci.yml?label=Build)](https://github.com/mariosergiosl/memusage/actions)
-[![GitHub Issues](https://img.shields.io/github/issues/mariosergiosl/memusage)](https://github.com/mariosergiosl/memusage/issues)
-[![Downloads](https://img.shields.io/github/downloads/mariosergiosl/memusage/total?label=Downloads)](https://github.com/mariosergiosl/memusage/releases)
+[![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
+[![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg?logo=python&logoColor=white)](https://www.python.org/)
+[![Platform: Linux](https://img.shields.io/badge/platform-linux-green.svg?logo=linux&logoColor=white)](https://www.kernel.org/)
+[![GitHub Stars](https://img.shields.io/github/stars/mariosergiosl/memusage?style=social)](https://github.com/mariosergiosl/memusage/stargazers)
+[![GitHub Forks](https://img.shields.io/github/forks/mariosergiosl/memusage?style=social)](https://github.com/mariosergiosl/memusage/network/members)
+[![GitHub Release](https://img.shields.io/github/v/release/mariosergiosl/memusage)](https://github.com/mariosergiosl/memusage/releases)
+[![Build Status](https://img.shields.io/github/actions/workflow/status/mariosergiosl/memusage/python-app.yml?branch=main)](https://github.com/mariosergiosl/memusage/actions)
+[![Issues](https://img.shields.io/github/issues/mariosergiosl/memusage)](https://github.com/mariosergiosl/memusage/issues)
+[![Code Size](https://img.shields.io/github/languages/code-size/mariosergiosl/memusage)](https://github.com/mariosergiosl/memusage)
+[![Last Commit](https://img.shields.io/github/last-commit/mariosergiosl/memusage)](https://github.com/mariosergiosl/memusage/commits/main)
 
 This tool provides deep insights into process behavior, making it invaluable for
 troubleshooting and security auditing. It details:
+
 - Memory usage (current and cumulative process tree).
 - Open files, including extensive disk attributes (filesystem type, mount options,
   UUIDs, LVM, multipath, disk type, model, vendor, and persistent device aliases).
@@ -18,8 +22,8 @@ troubleshooting and security auditing. It details:
 - Executable forensics (MD5 hash for integrity checks).
 - Process context (full command line, security labels like AppArmor/SELinux).
 - Anomaly detection via suspicious environment variables.
-Designed for system administrators, security analysts, and DevOps engineers.
 
+Designed for system administrators, security analysts, and DevOps engineers.
 
 ---
 
@@ -42,21 +46,27 @@ Want to see `memusage.py` in action? Follow our step-by-step tutorial to simulat
 - **Forensics:** The MD5 hash of the process executable for integrity verification.
 - **Security:** The process's security context (e.g., AppArmor/SELinux) and highlights potentially suspicious environment variables.
 
+---
+
 ## Installation
 
-For detailed installation instructions, please see the [INSTALL.md](INSTALL.md) file.
+For detailed installation instructions, please see the [INSTALL.md](./INSTALL.md) file.
 
+---
 
 ## Running code (Not Installation)
 
-1.  **Install dependency:**
-    ```bash
-    pip3 install psutil
-    ```
-2.  **Run the script:**
-    ```bash
-    python3 memusage.py
-    ```
+1. Install dependency:
+   ```bash
+   pip3 install psutil
+   ```
+
+2. Run the script:
+   ```bash
+   python3 memusage.py
+   ```
+
+---
 
 ## Usage - Running code (Not Installation)
 
@@ -66,7 +76,9 @@ Run the script from the command line:
 python3 memory_usage.py
 ```
 
-## Usage - if installation 
+---
+
+## Usage - if installation
 
 Run the script from the command line:
 
@@ -74,41 +86,39 @@ Run the script from the command line:
 memusage
 ```
 
+---
+
 ## Output
+
 The output will show:
 
-* Total system memory
-* Free system memory
-* Used system memory
-* Total memory usage of the process tree
-* Memory usage of each process with its PID, name, and memory consumption, color-coded by priority:
-* For each process:
-    * PID
-    * CMDLINE
-    * Executable MD5
-    * Security Context
-    * Loaded Libraries (Non-System)
-    * Process name
-    * Memory usage
-    * Open files
-      * Disk Device Information
-    * Network connections
-    * I/O activity (read and write bytes)
-    * Note: The Read bytes and Write bytes values are cumulative.
+- Total system memory
+- Free system memory
+- Used system memory
+- Total memory usage of the process tree
+- Memory usage of each process with its PID, name, and memory consumption, color-coded by priority:
+  - For each process:
+    - PID
+    - CMDLINE
+    - Executable MD5
+    - Security Context
+    - Loaded Libraries (Non-System)
+    - Process name
+    - Memory usage
+    - Open files
+      - Disk Device Information
+    - Network connections
+    - I/O activity (read and write bytes)
+    - Note: The Read bytes and Write bytes values are cumulative.
+- The output is color-coded based on process priority:
 
-* The output is color-coded based on process priority:
+| Priority | Color  | Nice Value  |
+|----------|--------|-------------|
+| High     | Red    | -20, -15, -10 |
+| Medium   | Yellow | -5, 0, 5    |
+| Low      | Green  | 10, 15, 19  |
 
-| Priority   | Color     |  Nice Value  |
-|------------|-----------|--------------|
-| High       | Red       | -20          |
-|            |           | -15          | 
-|            |           | -10          |
-| Medium     | Yellow    | -5           |
-|            |           | 0            |
-|            |           | 5            |
-| Low        | Green     | 10           |
-|            |           | 15           |
-|            |           | 19           |
+---
 
 ## Testing Color-Coded Output
 
@@ -116,23 +126,26 @@ To test the color-coded output, you can run processes with different priorities 
 
 **Examples:**
 
-* **High priority:**
-```bash
+- High priority:
+  ```bash
   nice -n -20 yes > /dev/null &
-```
-* **Medium priority:**
-```bash
-  nice -n -20 yes > /dev/null &
-```
-* **Low priority:**
-```bash
-  nice -n -20 yes > /dev/null &
-```
-After running these commands, execute memusage again and observe the color-coded output.
+  ```
 
+- Medium priority:
+  ```bash
+  nice -n -20 yes > /dev/null &
+  ```
 
-```bash
-Priority Color Table:
+- Low priority:
+  ```bash
+  nice -n -20 yes > /dev/null &
+  ```
+
+After running these commands, execute `memusage` again and observe the color-coded output.
+
+**Priority Color Table:**
+
+```
 Priority: -20   Color:
 Priority: -19   Color:
 Priority: -18   Color:
@@ -244,10 +257,16 @@ may require 'sudo' privileges.
  - Multipath (MP_ID, MP_PATHS): Shows if multiple paths exist to the same LUN for redundancy/performance.
    Common in SAN environments to avoid single points of failure.
  - Command and path limits have been applied for better readability.
-
 ```
+
+---
+
 ## Contributing
+
 Contributions are welcome! Please open an issue or submit a pull request if you have any suggestions or bug reports.
 
+---
+
 ## License
+
 This program is licensed under the GNU General Public License v2 or later.
