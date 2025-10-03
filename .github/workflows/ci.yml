@@ -7,14 +7,12 @@ on:
     paths:
       - 'memusage.py'
       - 'INSTALL.md'
-      - '.github/workflows/ci.yml'
   pull_request:
     branches:
       - main
     paths:
       - 'memusage.py'
       - 'INSTALL.md'
-      - '.github/workflows/ci.yml'
 
 jobs:
   test:
@@ -30,14 +28,15 @@ jobs:
         docker run -d --name test-opensuse -v $(pwd):/workspace -w /workspace opensuse/leap:15.6 tail -f /dev/null
         
         # Install dependencies
-        docker exec test-opensuse zypper refresh || true  # Remove -n flag
+        docker exec test-opensuse zypper refresh || true
         docker exec test-opensuse zypper install -y python3 python3-pip python3-devel gcc stress-ng
         
-        # Install psutil globally
-        docker exec test-opensuse pip3 install --break-system-packages psutil
+        # Update pip and install psutil
+        docker exec test-opensuse python3 -m pip install --upgrade pip
+        docker exec test-opensuse pip3 install --user psutil
         
         # Test import
-        docker exec test-opensuse python3 -c "import psutil; print('psutil imported successfully!')"
+        docker exec test-opensuse python3 -c "import sys; sys.path.append('/root/.local/lib/python3.6/site-packages'); import psutil; print('psutil imported successfully!')"
         
         # Test help without sudo
         docker exec test-opensuse python3 memusage.py --help
