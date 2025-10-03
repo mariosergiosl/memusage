@@ -1,4 +1,4 @@
-name: CI - Test Memusage Script
+name: CI - Enhanced Memusage Testing on openSUSE Leap 15.6
 
 on:
   push:
@@ -22,16 +22,26 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v4
 
-    - name: Set up Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: '3.8'
-
-    - name: Install dependencies
+    - name: Run tests in openSUSE Leap 15.6 container
       run: |
-        pip install psutil
+        # Pull and run openSUSE container
+        docker run -d --name test-opensuse -v $(pwd):/workspace -w /workspace opensuse/leap:15.6 zypper refresh
+        docker exec test-opensuse zypper install -y python3 python3-pip python3-devel gcc stress-ng
+        docker exec test-opensuse pip3 install --user psutil
+        docker exec test-opensuse python3 -c "import sys; sys.path.append('/root/.local/lib/python3.6/site-packages'); import psutil; print('psutil imported successfully!')"
 
-    - name: Run memusage script
-      run: |
-        sudo python3 memusage.py --help  # Testa help sem sudo full
-        echo "Script executed successfully!"
+        # Test help without sudo
+        docker exec test-opensuse python3 memusage.py --help
+        echo "Help command executed!"
+
+        # Simulate processes with stress-ng and test output
+        docker exec test-opensuse stress-ng --vm 2 --vm-bytes 50M --vm-keep -t 10s &
+        sleep 5
+        docker exec test-opensuse python3 memusage.py | grep -i "memory"  # Check for memory output
+        [ $? -eq 0 ] && echo "Memory usage detected in output!"
+
+        # Cleanup
+        docker exec test-opensuse pkill -f stress-ng
+        docker stop test-opensuse
+        docker rm test-opensuse
+        echo "Test completed!"
