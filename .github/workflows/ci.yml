@@ -1,0 +1,37 @@
+name: CI - Test Memusage Script
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'memusage.py'
+      - 'INSTALL.md'
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'memusage.py'
+      - 'INSTALL.md'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.8'
+
+    - name: Install dependencies
+      run: |
+        pip install psutil
+
+    - name: Run memusage script
+      run: |
+        sudo python3 memusage.py --help  # Testa help sem sudo full
+        echo "Script executed successfully!"
