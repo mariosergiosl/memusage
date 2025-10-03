@@ -30,7 +30,7 @@ jobs:
         docker run -d --name test-opensuse -v $(pwd):/workspace -w /workspace opensuse/leap:15.6 tail -f /dev/null
         
         # Install dependencies
-        docker exec test-opensuse zypper refresh -n
+        docker exec test-opensuse zypper refresh || true  # Remove -n flag
         docker exec test-opensuse zypper install -y python3 python3-pip python3-devel gcc stress-ng
         
         # Install psutil globally
