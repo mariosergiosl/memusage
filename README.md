@@ -10,6 +10,7 @@
 [![Issues](https://img.shields.io/github/issues/mariosergiosl/memusage)](https://github.com/mariosergiosl/memusage/issues)
 [![Code Size](https://img.shields.io/github/languages/code-size/mariosergiosl/memusage)](https://github.com/mariosergiosl/memusage)
 [![Last Commit](https://img.shields.io/github/last-commit/mariosergiosl/memusage)](https://github.com/mariosergiosl/memusage/commits/main)
+[![Downloads](https://img.shields.io/github/downloads/mariosergiosl/memusage/total?label=Downloads)](https://github.com/mariosergiosl/memusage/releases)
 
 This tool provides deep insights into process behavior, making it invaluable for
 troubleshooting and security auditing. It details:
